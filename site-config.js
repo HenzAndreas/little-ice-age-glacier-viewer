@@ -15,12 +15,8 @@
  *
  * Keys, with their defaults:
  *
- *   tilesBase        "tiles"        the root of the future published data store
+ *   tilesBase        "tiles"        where the LIA PMTiles archives are served
  *   inventoryBase    "data"         where the inventory archives and index live
- *   mosaicCollection "mosaics/collection.json"  the raster layers, under tilesBase
- *   gridIndex        "tiles/items.parquet"      the grid's item index, likewise
- *   cogReaderUrl     @developmentseed/geotiff on esm.sh, for js/cog-rgb.js
- *   hyparquetUrl     hyparquet on esm.sh, for the tile grid
  *   basemapUrl       Protomaps' hosted API, as a TileJSON URL with an API key
  *   basemapFlavor    "dark"         grayscale | black | dark | light | white
  *   basemapAssets    Protomaps' fonts and sprites endpoint
@@ -31,15 +27,11 @@
  *
  * `initialView` and `terrainCredit` are merged key by key, so naming just
  * `zoom` keeps the default centre and maximum.
- *
- * The two library URLs are imported and executed, so unlike the endpoints above
- * they are not reachable from the address bar. Repoint them to pin a version or
- * to serve the libraries from your own origin; leave them alone otherwise.
  */
 
-window.GLACE_CONFIG = {
-  /* Local development uses the future `tiles/` mount. Keep the query override
-   * available while the LIA conversion pipeline is being built. */
+window.LIA_CONFIG = {
+  /* `scripts/serve.py` mounts local-data/ here, and the Pages workflow copies
+   * the release assets here, so the same path works locally and online. */
   tilesBase: "tiles",
 
   // A wide Alps opening view; refine this from the web-ready raster bounds.

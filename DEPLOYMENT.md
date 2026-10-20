@@ -6,7 +6,7 @@ How to put the viewer online. Written 2026-10-19.
 
 | part | size | where it lives |
 | --- | --- | --- |
-| Page code: `index.html`, `style.css`, `site-config.js`, `js/`, `data/` | ~6 MB | GitHub repository, served by GitHub Pages |
+| Page code: `index.html`, `style.css`, `site-config.js`, `js/`, `data/`, `favicon/` | ~6 MB | GitHub repository, served by GitHub Pages |
 | Processing scripts: `processing-files/`, `scripts/`, `tests/` | small | GitHub repository (not served on the page) |
 | Three PMTiles archives in `local-data/` | ~46 MB | GitHub Release assets, copied into the Pages site at deploy time |
 | Source data in `original-data/` | ~1.3 GB | stays local; publish on Zenodo (or wherever the paper's data is archived), not on GitHub |
@@ -21,7 +21,8 @@ HTTP Range requests on the `.pmtiles` files.
    `original-data/` are in `.gitignore`, so no data goes into Git history.
 2. A **GitHub Release** (tag `data-v1`) holds the three `.pmtiles` files as
    assets. Each file is well under the 2 GB asset limit.
-3. **GitHub Pages**, deployed by `.github/workflows/pages.yml`, copies the page
+3. **GitHub Pages**, deployed by `.github/workflows/pages.yml`, first runs the
+   JS tests (a failure stops the deploy), then copies the page
    code and downloads the release assets into `tiles/`. The code already loads
    `tiles/...`, the same path `scripts/serve.py` uses locally, so no URL
    changes. The archives are served from the same origin as the page, so CORS
@@ -39,8 +40,8 @@ download), or Pages traffic becomes too high, move the archives to
 **Cloudflare R2** (10 GB free, no egress fees). R2 needs a CORS rule
 that allows `GET`/`HEAD` with the `Range` header and exposes `Content-Range`,
 `Content-Length`, `Accept-Ranges` and `ETag`. Then point `tilesBase`
-in `site-config.js`, the `url` in `data/lia-layers.json`, and
-`LIA_SURFACE_PATCH_URL`/`LIA_OUTLINES_URL` in `js/config.js` at the bucket.
+in `site-config.js` at the bucket: all three archive paths (the manifest's
+`url`, the surface patch and the outlines) are resolved under it.
 
 ## Steps
 
@@ -101,33 +102,33 @@ Protomaps key.
 
 Before the link goes public:
 
-- [ ] **Data licence.** Choose one for the derived web products (CC BY 4.0
-      would match most journal data). State it in `README.md` and in the page
-      credits. The MIT `LICENSE` covers only the code.
-- [ ] **Credits.** Keep the attribution to Luis Q. Gentner's GLACE viewer in
-      `README.md`, and add it to the page (for example, under the paper link or
-      in the attribution control).
-- [ ] **Citation.** Update the Henz et al. (2025) reference and DOI from the
-      EGUsphere preprint to the final paper once it is published (in
-      `index.html`, the outline popup in `js/overlays.js`, the layer
-      attributions, and `README.md`).
-- [ ] **Raw data link.** Link the archived source data (Zenodo or similar) from
-      the page and the README.
-- [ ] **Leftover GLACE wording.** Replace "Product: LIA thickness" and
-      "LIA thickness composite / Local resolution weighted median" in the
-      panel (from `js/rasters.js`).
-- [ ] **Tour text.** Read the tour wording in `js/tour.js` (`STEPS`),
-      especially the intro sentence about the LIA maximum and the model.
-- [ ] **Third-party terms.** Check the attribution and use terms for Esri
-      World Imagery, Protomaps and Mapterhorn for a public, non-commercial
-      site.
-- [ ] **Tests.** Update the stale viewer tests (`tests/viewer*.test.js`) and
-      run `pixi run --locked test`. Adding a test job to the workflow would
-      keep it green.
+- [x] **Data licence.** CC BY 4.0 for the paper, the Zenodo data and the
+      derived web layers. Stated in `README.md` and in the page's Credits
+      section. The MIT `LICENSE` covers only the code.
+- [x] **Credits.** A collapsible "Credits" section below "Map options" credits
+      the reconstruction, Luis Q. Gentner's GLACE viewer, Claude (Anthropic)
+      for help adapting the code, and the map data providers. The GLACE
+      attribution is also in `README.md`.
+- [x] **Citation.** The Cryosphere paper (doi:10.5194/tc-19-5913-2025) in
+      `index.html`, the outline popup (`js/overlays.js`), the archive
+      attributions (rebuilt 2026-10-20) and `README.md`.
+- [x] **Raw data link.** Zenodo, doi:10.5281/zenodo.17608701, linked under
+      the paper link, in the Credits and in the README.
+- [x] **Leftover GLACE wording.** The product, quantity and compositing text
+      is gone; the panel shows "Ice thickness opacity" and the scale.
+- [x] **Tour text.** New intro sentence in `js/tour.js` (`STEPS`).
+- [x] **Third-party terms.** The Credits section states that this is a public,
+      non-commercial research site, and credits Esri, OpenStreetMap,
+      Protomaps, Mapterhorn and MapLibre. The basemap key still needs the
+      live domain (step 4).
+- [x] **Tests.** The viewer tests cover the LIA page (`npm test`, 72 tests),
+      and the Pages workflow runs them before each deploy.
 - [ ] **Browsers.** Try the live page in Chrome, Firefox, Safari and on a
       phone (the panel starts collapsed on narrow screens).
-- [ ] **Page metadata.** Add a favicon, a `<meta name="description">` and
-      a social preview image (`og:image`) for shared links.
-- [ ] **Remove the GLACE remnants** that the page still imports but does not use
-      (`js/store.js`, `js/cog-rgb.js` and the GLACE STAC path in `js/rasters.js`),
-      once the viewer tests cover the LIA path.
+- [x] **Page metadata.** Favicons from `favicon/`, a `<meta name="description">`
+      and Open Graph title and description.
+- [ ] **Social preview image.** Add `og:image` once the live URL is known
+      (it should be an absolute URL, 1200×630 px works best).
+- [x] **GLACE remnants removed:** `js/store.js`, `js/cog-rgb.js`, the STAC
+      path in `js/rasters.js`, their tests and fixtures, and the `lerc`
+      import-map entry.

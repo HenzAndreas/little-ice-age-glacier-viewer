@@ -1,7 +1,7 @@
 /*
  * Every file index.html asks the browser for, and whether the deploy stages it.
  *
- * deploy.yml names the directories it copies one by one, so adding one to the
+ * pages.yml names the directories it copies one by one, so adding one to the
  * repository is not enough to publish it — and a missing icon or wordmark shows
  * up as a plain-looking page rather than as any error a DOM test would catch.
  */
@@ -30,7 +30,7 @@ function localReferences() {
 test("every file the page references is in the repository", () => {
   const refs = localReferences();
   // A guard on the guard: a selector that matched nothing would pass silently.
-  assert.ok(!refs.some((ref) => ref.includes("glace")), "the page has no GLACE branding asset");
+  assert.ok(refs.includes("favicon/favicon.ico"), "the favicon is among the references");
 
   for (const ref of refs) {
     assert.ok(fs.existsSync(path.join(REPO, ref)), `index.html asks for ${ref}, which is missing`);
@@ -46,13 +46,14 @@ test("every pin of maplibre-gl on the page names one version", () => {
 });
 
 test("the deploy stages every directory the page reads from", () => {
-  const workflowPath = path.join(REPO, ".github", "workflows", "deploy.yml");
-  if (!fs.existsSync(workflowPath)) return;
-  const workflow = fs.readFileSync(workflowPath, "utf8");
-  const stage = workflow.slice(workflow.indexOf("Stage the site"), workflow.indexOf("upload-pages"));
+  const workflow = fs.readFileSync(path.join(REPO, ".github", "workflows", "pages.yml"), "utf8");
+  const stage = workflow.slice(
+    workflow.indexOf("Assemble the site"),
+    workflow.indexOf("Fetch the data archives"),
+  );
 
   for (const ref of localReferences()) {
     const root = ref.split("/")[0];
-    assert.match(stage, new RegExp(`\\b${root}\\b`), `deploy.yml never copies ${root}`);
+    assert.match(stage, new RegExp(`\\b${root}\\b`), `pages.yml never copies ${root}`);
   }
 });

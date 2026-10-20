@@ -18,15 +18,16 @@ const MARGIN_PX = 10;
 const SPOT_PAD_PX = 6;
 
 /* A 3D look up the Great Aletsch Glacier from its tongue, for the "Show me"
- * button on the 3D step. Pitch stays at MapLibre's default 60° limit. */
+ * button on the 3D step. */
 const SHOWCASE_VIEW = { center: [8.04, 46.47], zoom: 11.7, pitch: 60, bearing: 20 };
 
 const STEPS = [
   {
     title: "Little Ice Age glaciers of the Alps",
     text:
-      "This map shows the glaciers of the European Alps as they were at their Little Ice Age " +
-      "maximum in the mid-19th century, reconstructed with a 3D glacier model. A short tour of the controls follows.",
+      "This map shows the glaciers of the European Alps as they were at their maximum stage " +
+      "during the Little Ice Age (1260 to 1860 CE), reconstructed with a 3D glacier model. " +
+      "You can skip the tour or click next to explore how the map-viewer works.",
   },
   {
     target: "#period-row",

@@ -111,7 +111,7 @@ export function buildSegmented(node, entries, onSelect) {
 /* ---------- collapsible sections ---------- */
 
 /* The panel's section headers: a button that shows and hides the block below
- * it. Shared by the glacier inventories and the additional layers, so the two
+ * it. Shared by the glacier inventories, the map options and the credits, so they
  * cannot drift apart in behaviour the way two hand-rolled copies would.
  *
  * The markup carries the starting state — `aria-expanded` on the button, the
@@ -123,8 +123,8 @@ export function collapsible(toggleId, bodyId) {
   toggle.addEventListener("click", () => {
     const open = toggle.getAttribute("aria-expanded") === "true";
     toggle.setAttribute("aria-expanded", String(!open));
-    // `up` marks the collapsed state, here and on the panel's own toggle.
-    toggle.querySelector(".chevron").classList.toggle("up", open);
+    // `closed` marks the collapsed state, here and on the panel's own toggle.
+    toggle.querySelector(".chevron").classList.toggle("closed", open);
     body.hidden = open;
   });
 }

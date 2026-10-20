@@ -390,8 +390,18 @@ input[type="range"] { width: 100%; margin: 0; accent-color: #fff; }
 
 /* Shared by the panel and the inventories toggle: one glyph, flipped, so the
    two states cannot drift apart. `up` marks the collapsed one. */
-.chevron { display: flex; transition: transform 0.15s ease; }
-.chevron.up { transform: rotate(180deg); }
+/* A section that can be opened shows a plus; an open one shows a down chevron
+   pointing at what it revealed. `closed` is set in the markup and by
+   collapsible() in js/ui.js. */
+.chevron { display: flex; }
+.chevron .icon-closed,
+.chevron.closed .icon-open { display: none; }
+.chevron.closed .icon-closed { display: block; }
+
+#credits p { margin: 0 0 8px; font-size: 12px; line-height: 1.45; color: var(--muted); }
+#credits strong { color: var(--text); font-weight: 600; }
+#credits a { color: var(--accent); text-decoration: none; }
+#credits a:hover { text-decoration: underline; }
 
 /* Halfway between the two obvious choices. --border is a near-black hairline,
    which all but vanishes once a bright composite is showing through the glass
@@ -639,7 +649,8 @@ input[type="range"] { width: 100%; margin: 0; accent-color: #fff; }
 
 /* Collapsible section header, styled like the other section labels but clickable. */
 #inventories-toggle,
-#extras-toggle {
+#extras-toggle,
+#credits-toggle {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -656,12 +667,14 @@ input[type="range"] { width: 100%; margin: 0; accent-color: #fff; }
   cursor: pointer;
 }
 #inventories-toggle:hover,
-#extras-toggle:hover { color: var(--text); }
+#extras-toggle:hover,
+#credits-toggle:hover { color: var(--text); }
 
 /* The last toggle in a collapsed-by-default block should not leave a gap above
    whatever follows it. */
 #extras .control:last-child { margin-bottom: 0; }
-#extras-section { margin-bottom: 0; }
+#extras-section,
+#credits-section { margin-bottom: 0; }
 
 .maplibregl-popup-content hr {
   height: 0;

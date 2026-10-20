@@ -60,9 +60,9 @@ test("a narrow viewport opens with the panel collapsed", async () => {
   assert.match(el("panel-toggle").getAttribute("aria-label"), /show/i);
 
   // The title bar is what is left, so the reader can still see what this is
-  // and get the controls back. The heading is the wordmark, so what names the
-  // page here is the image's alt text.
-  assert.equal(el("title").querySelector("img").alt, "GLACE");
+  // and get the controls back — with a plus that says there is more.
+  assert.equal(el("title").textContent.trim(), "Little Ice Age glaciers");
+  assert.ok(el("panel-toggle").querySelector(".chevron").classList.contains("closed"));
 
   el("panel-toggle").click();
   assert.ok(el("panel").classList.contains("expanded"), "and a tap brings them back");

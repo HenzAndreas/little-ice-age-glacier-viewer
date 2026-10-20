@@ -24,7 +24,8 @@ test("a pitched #hash comes back in 3D", async () => {
   map.fire("style.load");
   await settle();
 
-  assert.deepEqual(map.getTerrain(), { source: "terrain", exaggeration: 1 });
+  // The page opens on the Little Ice Age, so the mesh is the composed LIA terrain.
+  assert.deepEqual(map.getTerrain(), { source: "terrain-lia", exaggeration: 1 });
   assert.equal(
     map.pitch,
     55,
@@ -32,7 +33,5 @@ test("a pitched #hash comes back in 3D", async () => {
   );
   assert.equal(page.control(".maplibregl-ctrl-3d").textContent, "2D");
 
-  // Nothing ticked the hillshade, so the 3D path is what created the DEM.
-  assert.ok(map.getSource("terrain"));
-  assert.equal(map.getLayer("hillshade"), undefined);
+  assert.ok(map.getSource("terrain-lia"));
 });

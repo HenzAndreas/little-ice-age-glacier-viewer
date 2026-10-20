@@ -318,6 +318,7 @@ export function liaOutlineRow(feature) {
     ["Volume", withUnit(props.volume, "km³")],
     ["Length", withUnit(props.lia_length, "m")],
     ["Outline source", props.Citation],
+    ["Outline inventory", "Reinthaler and Paul (2025), The Cryosphere, doi:10.5194/tc-19-753-2025"],
     ["Reconstruction", "Henz et al. (2025), The Cryosphere, doi:10.5194/tc-19-5913-2025"],
   ]);
 }

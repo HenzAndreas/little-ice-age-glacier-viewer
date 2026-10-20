@@ -3,8 +3,8 @@
  * layered onto the basemap that are not data — the label toggle, the shaded
  * relief and the 3D view.
  *
- * The GLACE rasters and the glacier inventories are PMTiles archives read
- * straight from object storage over HTTP range requests. The basemap and the
+ * The LIA rasters, the outlines and the glacier inventories are PMTiles
+ * archives read over HTTP range requests. The basemap and the
  * terrain instead read from tile endpoints, each declared to MapLibre as a
  * TileJSON document: the Protomaps hosted API for the basemap, and Mapterhorn
  * for the terrain — Mapterhorn also publishes PMTiles, but only up to z12 in
@@ -22,7 +22,6 @@ import {
   TERRAIN_TILEJSON,
   WORLD_IMAGERY_URL,
 } from "./config.js";
-import { cogRgbProtocol } from "./cog-rgb.js";
 import { browserLiaDemProtocol, LIA_DEM_TILES } from "./lia-dem.js";
 import { installSky } from "./sky.js";
 import { setStatus } from "./ui.js";
@@ -30,11 +29,6 @@ import { setStatus } from "./ui.js";
 /* `metadata: true` so each archive's own TileJSON reaches MapLibre, which is
  * what carries its attribution. Costs one small read per archive. */
 maplibregl.addProtocol("pmtiles", new pmtiles.Protocol({ metadata: true }).tile);
-
-/* The float COGs, read and coloured in the browser. Nothing on the page
- * produces a `glace-rgb://` source today; registering is free, and the reader
- * is not fetched until a tile is asked for — see js/cog-rgb.js and AGENTS.md. */
-maplibregl.addProtocol("glace-rgb", cogRgbProtocol);
 
 /* Mapterhorn with the LIA surface blended in, tile by tile — see js/lia-dem.js.
  * Nothing is fetched until the LIA terrain is first drawn. */
@@ -48,8 +42,8 @@ maplibregl.addProtocol(
  * are inserted below its first symbol layer — see addStacked() below.
  *
  * Every flavor's labels are greys a step or two from their ground, drawn for a
- * map that is nothing but that ground. Here the ground is a GLACE raster
- * through cmc.lipari or grayC, and a grey label over it is lost, so every
+ * map that is nothing but that ground. Here the ground is imagery or the ice
+ * thickness ramp, and a grey label over it is lost, so every
  * label face is pushed to the flavor's extreme — white over a black halo on
  * the dark flavors, black over a white halo on the light ones. This is done in
  * the flavor, which is what the generator reads its label paint from, not by
@@ -86,6 +80,19 @@ const style = {
    * is reading a glacier. Terrain works under it, so the 3D button costs
    * nothing. */
   projection: { type: "globe" },
+  /* What is above the horizon once the camera is tilted towards it: a pale
+   * day sky fading into haze at the horizon, rather than the page's dark
+   * background. `atmosphere-blend` is 0 because the halo around the globe is
+   * painted by js/sky.js, and fog only reaches the ground near the horizon. */
+  sky: {
+    "sky-color": "#8fb8de",
+    "horizon-color": "#dde7f0",
+    "fog-color": "#dde7f0",
+    "sky-horizon-blend": 0.7,
+    "horizon-fog-blend": 0.6,
+    "fog-ground-blend": 0.9,
+    "atmosphere-blend": 0,
+  },
   glyphs: `${BASEMAP_ASSETS}/fonts/{fontstack}/{range}.pbf`,
   sprite: `${BASEMAP_ASSETS}/sprites/v4/${BASEMAP_FLAVOR}`,
   sources: {
@@ -124,6 +131,7 @@ const WORLD_IMAGERY_LAYER = "world-imagery";
 const RELIEF_BACKGROUND_LAYER = "relief-background";
 const RELIEF_LAYER = "relief-hillshade";
 let basemapChoice = "imagery";
+const MAX_PITCH = 85;
 
 /* Without WebGL2 the constructor throws, and every module below depends on
  * the map, so the page ends here: the status line says why, then the error
@@ -137,6 +145,10 @@ function createMap() {
       zoom: INITIAL_VIEW.zoom,
       minZoom: INITIAL_VIEW.minZoom,
       maxZoom: INITIAL_VIEW.maxZoom,
+      /* MapLibre's default stops the camera at 60°, which still looks down on
+       * the valley. 85° is its upper limit and close to standing on the
+       * ground looking along it. */
+      maxPitch: MAX_PITCH,
       // The view lives in the URL, so a hash overrides the opening view above.
       hash: true,
       attributionControl: false,
@@ -196,7 +208,7 @@ function firstSymbolLayer() {
 
 /* Draw order, bottom to top:
  *
- *   basemap fills · GLACE rasters · hillshade · vector overlays · basemap labels
+ *   basemap fills · LIA rasters · hillshade · vector overlays · basemap labels
  *
  * Everything above the basemap is created lazily, the first time its control is
  * switched on, so the layers arrive in whatever order the reader clicks. That
@@ -239,7 +251,7 @@ function ensureWorldImagery() {
   }
   if (!map.getLayer(WORLD_IMAGERY_LAYER)) {
     /* Below the first generated basemap layer, so imagery remains the floor of
-     * the stack and GLACE data, relief, overlays and labels all stay above it. */
+     * the stack and the LIA data, relief, overlays and labels all stay above it. */
     map.addLayer(
       {
         id: WORLD_IMAGERY_LAYER,
@@ -447,8 +459,8 @@ async function applyHillshade() {
  * overhead view where it would be invisible. The tilt is animated because the
  * jump reads as the page reloading.
  *
- * 60° is MapLibre's default `maxPitch`, so the slant does not need the map to
- * be constructed with a raised limit. */
+ * 60° is a readable slant to start from; the map allows up to MAX_PITCH for
+ * dragging lower. */
 const THREE_D_PITCH = 60;
 const THREE_D_DURATION_MS = 600;
 const TERRAIN_EXAGGERATION = 1;

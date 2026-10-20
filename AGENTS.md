@@ -35,16 +35,7 @@ Use GDAL/Rasterio to inspect and transform the source data. Before writing a con
 
 The useful inherited infrastructure is in `js/map.js`, `js/ui.js`, `scripts/serve.py`, the MapLibre setup in `index.html`, and the existing test helpers. The basemap, terrain, hillshade, layer ordering, opacity patterns, lazy vector overlay lifecycle, and safe DOM construction are reusable.
 
-The following parts are GLACE-specific and should be replaced or isolated rather than extended for LIA data:
-
-- `js/store.js` and the STAC mosaics collection;
-- annual product/polarization/QA controls in `js/rasters.js`;
-- the `glace-rgb://` COG protocol;
-- the old Swiss inventory index and tile-grid path in `js/overlays.js`;
-- GLACE catalog fixtures and tests;
-- `scripts/build-tiles.py` as currently written, because it expects the old `data/inventories.json` schema.
-
-Do not delete those references until the replacement viewer path has tests. Avoid broad rewrites of the map infrastructure.
+The GLACE-specific parts (`js/store.js` and the STAC mosaics collection, the product/polarization/QA controls in `js/rasters.js`, the `glace-rgb://` COG protocol in `js/cog-rgb.js`, the Swiss inventories and tile grid, and the GLACE catalog fixtures and tests) were removed on 2026-10-20, once `tests/viewer.test.js` covered the LIA path. The display rasters are now listed in `data/lia-layers.json` and read by `js/rasters.js`. `scripts/build-tiles.py` still builds inventory archives from the `data/inventories.json` schema. Avoid broad rewrites of the map infrastructure.
 
 ## Local workflow
 

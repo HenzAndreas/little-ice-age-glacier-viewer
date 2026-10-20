@@ -1,7 +1,6 @@
 /*
- * The page when the catalog cannot be reached — the deployed state until the
- * GLACE archives are published. Its own file because the map is a module
- * singleton, and `node --test` gives each file its own process.
+ * The page when the layer manifest cannot be read. Its own file because the map
+ * is a module singleton, and `node --test` gives each file its own process.
  */
 
 import assert from "node:assert/strict";
@@ -10,9 +9,9 @@ import test from "node:test";
 
 import { installBrowser, load, REPO, settle } from "./helpers/browser.js";
 
-test("a missing catalog costs only the rasters", async () => {
+test("a missing manifest costs only the rasters", async () => {
   const page = installBrowser({
-    // Nothing under tiles/mosaics/, so the fetch for the collection answers 404.
+    // data/lia-layers.json is not served, so its fetch answers 404.
     files: { "data/inventories.json": path.join(REPO, "data", "inventories.json") },
   });
   const { el } = page;
@@ -23,11 +22,11 @@ test("a missing catalog costs only the rasters", async () => {
   await settle();
 
   assert.equal(el("raster-controls").hidden, true, "dead sliders are hidden, not left behind");
-  assert.match(el("status").textContent, /No GLACE layers/);
+  assert.match(el("status").textContent, /No LIA layers/);
   assert.match(el("status").textContent, /still work/);
 
   // Everything with no bearing on the rasters is untouched.
-  assert.equal(el("inventories").children.length, 3);
+  assert.equal(el("inventories").children.length, 1);
   assert.equal(el("inventories-section").hidden, false);
 
   page.el("hillshade").checked = true;

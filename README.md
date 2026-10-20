@@ -21,7 +21,21 @@ The supplied raster dimensions are consistent with 50 m data. Exact bounds, noda
 
 The research data comes from:
 
-> Henz, A., Reinthaler, J., Nussbaumer, S.U., Leger, T.P.M., Kamleitner, S., Jouvet, G. and Vieli, A. (2025), “Alps-wide high-resolution 3D modelling reconstruction of glacier geometry and climatic conditions for the Little Ice Age”, *EGUsphere*, 2025, 1–37, [doi:10.5194/egusphere-2025-2353](https://doi.org/10.5194/tc-19-5913-2025).
+> Henz, A., Reinthaler, J., Nussbaumer, S. U., Leger, T. P. M., Kamleitner, S., Jouvet, G., & Vieli, A. (2025). Alps-wide high-resolution 3D modelling reconstruction of glacier geometry and climatic conditions for the Little Ice Age. *The Cryosphere*, 19(11), 5913–5937. [doi:10.5194/tc-19-5913-2025](https://doi.org/10.5194/tc-19-5913-2025)
+
+The LIA glacier outlines come from Reinthaler, J. and Paul, F. (2025), *The Cryosphere*, [doi:10.5194/tc-19-753-2025](https://doi.org/10.5194/tc-19-753-2025).
+
+The source data (rasters, outlines and glacier table) is archived on Zenodo: [doi:10.5281/zenodo.17608701](https://doi.org/10.5281/zenodo.17608701).
+
+## Licences
+
+- **Data:** the paper, the archived source data and the derived web layers in this viewer (the PMTiles archives) are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Please cite Henz et al. (2025) when you use them.
+- **Code:** MIT, see [LICENSE](LICENSE).
+- **Third-party map data:** Esri World Imagery, OpenStreetMap/Protomaps labels and Mapterhorn terrain are used under their providers' terms on this public, non-commercial site. They are credited in the map's attribution control and in the page's Credits section.
+
+## Credits
+
+The viewer is adapted from Luis Q. Gentner's GLACE viewer. The code was adapted with the help of Claude (Anthropic).
 
 ## Data publication plan
 

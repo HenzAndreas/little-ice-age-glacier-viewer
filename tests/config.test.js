@@ -19,7 +19,7 @@ const load = async (options) => {
 test("built-in defaults", async () => {
   const config = await load();
   assert.equal(config.TILES_BASE, "tiles");
-  assert.equal(config.MOSAIC_COLLECTION_URL, "tiles/mosaics/collection.json");
+  assert.equal(config.LIA_OUTLINES_URL, "tiles/Alps-wide_LIA_outlines.pmtiles");
   assert.equal(config.INVENTORY_INDEX_URL, "data/inventories.json");
   assert.equal(config.BASEMAP_FLAVOR, "dark");
   assert.match(config.WORLD_IMAGERY_URL, /World_Imagery\/MapServer\/tile\/\{z\}\/\{y\}\/\{x\}/);
@@ -37,14 +37,17 @@ test("an empty site config changes nothing", async () => {
 test("site config repoints the archives, and everything derived follows", async () => {
   const config = await load({
     site: {
-      tilesBase: "https://s3.example/glace/",
-      mosaicCollection: "collections/mosaics.json",
+      tilesBase: "https://s3.example/lia/",
       worldImageryUrl: "https://imagery.example/{z}/{x}/{y}.jpg",
     },
   });
   // The trailing slash is trimmed, so the joins below cannot double it.
-  assert.equal(config.TILES_BASE, "https://s3.example/glace");
-  assert.equal(config.MOSAIC_COLLECTION_URL, "https://s3.example/glace/collections/mosaics.json");
+  assert.equal(config.TILES_BASE, "https://s3.example/lia");
+  assert.equal(config.LIA_OUTLINES_URL, "https://s3.example/lia/Alps-wide_LIA_outlines.pmtiles");
+  assert.equal(
+    config.LIA_SURFACE_PATCH_URL,
+    "https://s3.example/lia/Alps-wide_LIA_surface_patch.pmtiles",
+  );
   assert.equal(config.WORLD_IMAGERY_URL, "https://imagery.example/{z}/{x}/{y}.jpg");
 });
 
@@ -63,7 +66,7 @@ test("a partial nested override keeps the rest of the object", async () => {
 test("query parameters win over site config", async () => {
   const config = await load({
     search: "?tiles=https://other.example/x&basemap=https://other.example/b.pmtiles&flavor=dark",
-    site: { tilesBase: "https://s3.example/glace", basemapFlavor: "light" },
+    site: { tilesBase: "https://s3.example/lia", basemapFlavor: "light" },
   });
   assert.equal(config.TILES_BASE, "https://other.example/x");
   assert.equal(config.BASEMAP_URL, "https://other.example/b.pmtiles");
@@ -71,19 +74,16 @@ test("query parameters win over site config", async () => {
 });
 
 test("an empty query parameter does not blank a setting", async () => {
-  const config = await load({ search: "?tiles=", site: { tilesBase: "https://s3.example/glace" } });
-  assert.equal(config.TILES_BASE, "https://s3.example/glace");
+  const config = await load({ search: "?tiles=", site: { tilesBase: "https://s3.example/lia" } });
+  assert.equal(config.TILES_BASE, "https://s3.example/lia");
 });
 
 test("deployment-only settings are not reachable from the address bar", async () => {
   const config = await load({
     search:
-      "?mosaicCollection=nope&cogReaderUrl=http://evil" +
-      "&inventoryBase=/etc&initialView=x&terrainTilejson=http://evil",
+      "?inventoryBase=/etc&initialView=x&terrainTilejson=http://evil&worldImageryUrl=http://evil",
   });
-  // The reader URL is imported and executed, so it matters most here.
-  assert.equal(config.MOSAIC_COLLECTION_URL, "tiles/mosaics/collection.json");
-  assert.match(config.COG_READER_URL, /^https:\/\/esm\.sh\//);
+  assert.match(config.WORLD_IMAGERY_URL, /^https:\/\/server\.arcgisonline\.com\//);
   assert.equal(config.INVENTORY_BASE, "data");
   assert.equal(config.TERRAIN_TILEJSON, "https://tiles.mapterhorn.com/tilejson.json");
   assert.deepEqual(config.INITIAL_VIEW, { center: [8.03, 46.51], zoom: 10, minZoom: 1, maxZoom: 14 });
@@ -94,15 +94,15 @@ test("a misspelled setting warns instead of silently doing nothing", async () =>
   assert.ok(warnings.some((line) => line.includes("tileBase")));
 });
 
-test("the committed site-config.js names the store, and sets nothing else", async () => {
-  // This copy of the file is a live deployment as well as a template, and the
-  // one thing it has to say is where the archives are. Everything else stays
-  // commented out: an uncommented key here would change every deployment that
-  // does not replace the file, which is what the defaults are for.
+test("the committed site-config.js sets only the archive path and the opening view", async () => {
+  // This copy of the file is the live deployment as well as the template.
+  // Anything else uncommented here would change every deployment that does not
+  // replace the file, which is what the defaults are for.
   const { window } = installBrowser();
   const source = fs.readFileSync(path.join(REPO, "site-config.js"), "utf8");
   new Function("window", source)(window);
-  assert.deepEqual(window.GLACE_CONFIG, {
-    tilesBase: "https://data.source.coop/lqgentner/glace-ch",
+  assert.deepEqual(window.LIA_CONFIG, {
+    tilesBase: "tiles",
+    initialView: { center: [8.5, 46.5], zoom: 6, maxZoom: 14 },
   });
 });

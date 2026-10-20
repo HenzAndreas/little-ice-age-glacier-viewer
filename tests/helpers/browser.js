@@ -279,8 +279,8 @@ export function installBrowser({
     });
   }
 
-  if (site === undefined) delete globalThis.GLACE_CONFIG;
-  else globalThis.GLACE_CONFIG = site;
+  if (site === undefined) delete globalThis.LIA_CONFIG;
+  else globalThis.LIA_CONFIG = site;
 
   /* jsdom has no matchMedia, and the page asks for one at boot to decide
    * whether the panel starts collapsed. The page only ever asks the one
@@ -333,27 +333,6 @@ export function installBrowser({
     },
   };
   globalThis.pmtiles = { Protocol: class { tile() {} } };
-  /* Enough of the canvas for js/cog-rgb.js to turn its RGBA into tile bytes.
-   * The real one encodes a PNG; this hands the raw pixels straight back, which
-   * is both simpler and more useful — a test can assert on a channel value
-   * instead of decoding an image to find it. */
-  globalThis.ImageData = class {
-    constructor(data, width, height) {
-      Object.assign(this, { data, width, height });
-    }
-  };
-  globalThis.OffscreenCanvas = class {
-    constructor(width, height) {
-      Object.assign(this, { width, height });
-    }
-    getContext() {
-      return { putImageData: (image) => { this.image = image; } };
-    }
-    async convertToBlob() {
-      const { image } = this;
-      return { arrayBuffer: async () => image.data.buffer };
-    }
-  };
   globalThis.basemaps = {
     namedFlavor: (name) => ({ ...FLAVORS[name] }),
     layers: (_name, flavor) => basemapLayers(flavor),

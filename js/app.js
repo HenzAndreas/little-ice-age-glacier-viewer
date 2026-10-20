@@ -1,8 +1,8 @@
 /*
- * GLACE quick-look viewer — startup and control wiring.
+ * Little Ice Age glacier viewer — startup and control wiring.
  *
- * The catalog is read from wherever `tilesBase` points — site-config.js on the
- * deployed page, or `?tiles=<base-url>` from the address bar.
+ * The archives are read from wherever `tilesBase` points — site-config.js on
+ * the deployed page, or `?tiles=<base-url>` from the address bar.
  *
  * Every control is wired here, before anything has loaded, and every handler
  * that touches the map waits on `styleReady` rather than being attached late.
@@ -43,8 +43,8 @@ function setPanelOpen(open) {
   const action = open ? "Hide the controls" : "Show the controls";
   toggle.title = action;
   toggle.setAttribute("aria-label", action);
-  // `up` marks the collapsed state, as it does on the inventories toggle.
-  toggle.querySelector(".chevron").classList.toggle("up", !open);
+  // `closed` (a plus) marks the collapsed state, as on the section toggles.
+  toggle.querySelector(".chevron").classList.toggle("closed", !open);
 }
 
 /* The glacier state the whole page follows. "Little Ice Age" puts the
@@ -119,6 +119,7 @@ function initControls() {
   el("basemap").addEventListener("change", (event) => toggleBasemapLabels(event.target.checked));
   el("lia-outlines").addEventListener("change", (event) => liaOutlines.setEnabled(event.target.checked));
   collapsible("extras-toggle", "extras");
+  collapsible("credits-toggle", "credits");
 }
 
 async function boot() {
@@ -128,7 +129,7 @@ async function boot() {
   });
   selectPeriod("lia");
   liaOutlines.setEnabled(el("lia-outlines").checked);
-  // The inventory list is independent of the map and the raster catalog, so it
+  // The inventory list is independent of the map and the layer manifest, so it
   // is built at once: waiting for them made the panel jump as it grew.
   loadInventories();
 

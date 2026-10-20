@@ -1,7 +1,7 @@
 # Task log: LIA terrain and viewer
 
 Working notes for continuing the Little Ice Age viewer. Read this together with
-`AGENTS.md`, `README.md` and `DEM_WORKFLOW.md` and `DEPLOYMENT.md`. Last updated 2026-10-19.
+`AGENTS.md`, `README.md` and `DEM_WORKFLOW.md` and `DEPLOYMENT.md`. Last updated 2026-10-20.
 
 ## Goal
 
@@ -27,14 +27,16 @@ reads its window of the z12 ancestor. Tiles without ice pass through unchanged.
   2026-10-12.
 - Node: none on PATH. Use the one bundled with VS Code:
   `~/.vscode-server/bin/*/node --test tests/lia-dem.test.js`.
-- `pixi` and `npm` are not installed, so the jsdom viewer tests cannot run here.
+- `pixi` and `npm` are not installed system-wide. For the jsdom tests, make a
+  throwaway Node env (`conda create -p <scratch>/nodeenv -c conda-forge nodejs=24`),
+  put its `bin` on PATH, then `npm ci && npm test` (72 tests, all pass on 2026-10-20).
 - Python tests: `~/miniconda3/envs/map-viewers/bin/python -m unittest discover -s tests`
   (40 tests, all pass).
 - Headless screenshots work with Windows Edge from WSL:
   `"/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe" --headless=new --use-angle=swiftshader --enable-unsafe-swiftshader --screenshot=...`.
   - Edge drops the `#hash` passed on the command line. Serve a one-line
     redirect page on another port that sets the hash in JavaScript.
-  - The pitch must be ≤ 60°, or MapLibre ignores the hash.
+  - The pitch must be ≤ 85° (`MAX_PITCH` in `js/map.js`), or MapLibre ignores the hash.
   - Use a profile in `C:\Windows\Temp\lia-edge-*` and delete it afterwards.
 
 ## Data (all under `local-data/`, built from `original-data/`)
@@ -109,6 +111,16 @@ Notes on the archives:
 - Verified in headless Edge at Aletsch: the 3D view, flat view, outlines,
   smooth thickness margins, and no console errors from our code.
 
+- 2026-10-20: publishing checklist (see `DEPLOYMENT.md`). Removed the GLACE
+  remnants (`js/store.js`, `js/cog-rgb.js`, their tests/fixtures, `lerc`);
+  `js/rasters.js` now reads only `data/lia-layers.json` (`url` relative to
+  `tilesBase`). Credits section, Zenodo data link, final DOI everywhere
+  (archives rebuilt), new tour intro, favicons, meta description. Max pitch
+  raised to 85° with a pale `sky` in the style. Collapsed sections and the
+  collapsed panel show a plus (`.chevron.closed`), open ones a down chevron.
+  `site-config.js` sets `window.LIA_CONFIG` (was `GLACE_CONFIG`). Viewer tests
+  rewritten for the LIA page; the Pages workflow runs them before deploying.
+
 ## Next
 
 1. **User check in a real browser.** The switch, the tour (clear
@@ -116,16 +128,9 @@ Notes on the archives:
    slider, and the margins in 3D at z14.
 2. **Deploy**: follow `DEPLOYMENT.md` steps 1-5 (git init, GitHub repo,
    `data-v1` release, Pages source = Actions, Protomaps key origins).
-3. **Publishing checklist** at the end of `DEPLOYMENT.md`: data licence,
-   GLACE credit on the page, final citation, raw-data link, leftover GLACE
-   panel wording ("Product: LIA thickness", "LIA thickness composite / Local
-   resolution weighted median" from `js/rasters.js`), tour wording,
-   third-party terms, page metadata.
-4. **Stale viewer tests.** `tests/viewer.test.js` and
-   `tests/viewer-3d-restore.test.js` expect a terrain source named `terrain`,
-   the old surface checkbox, the vector basemap, the SGI inventories and the
-   `grid` checkbox. Update them, and add tests for the switch, the tour and
-   the outline popup. Needs npm/jsdom (or run them in GitHub Actions).
+3. **Publishing checklist**: done except browser testing on the live site
+   and an `og:image` once the URL is known.
+4. ~~Stale viewer tests~~ — done 2026-10-20.
 5. **Faint checker pattern** in the 3D blend band at z15+, from bilinear
    interpolation of the 26 m weight grid. Options: interpolate the weight with
    Catmull-Rom too, or write the patch at z13.

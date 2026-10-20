@@ -38,7 +38,7 @@ FIELDS = {
     "lia_length": 0,
     "Citation": None,
 }
-ATTRIBUTION = "LIA outlines: <a href=\"https://doi.org/10.5194/tc-19-5913-2025\">Henz et al. (2025)</a>"
+ATTRIBUTION = "LIA outlines: <a href=\"https://doi.org/10.5194/tc-19-753-2025\">Reinthaler and Paul (2025)</a>"
 
 
 def popup_table(frame):

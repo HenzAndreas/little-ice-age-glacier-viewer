@@ -5,7 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Little Ice Age glaciers — European Alps</title>
 
+    <meta name="description"
+          content="The glaciers of the European Alps at their Little Ice Age maximum (1260 to 1860 CE), reconstructed with a 3D glacier model: ice thickness, surface and outlines in an interactive 3D map." />
     <meta name="theme-color" content="#10141c" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Little Ice Age glaciers — European Alps" />
+    <meta property="og:description"
+          content="The glaciers of the European Alps at their Little Ice Age maximum, reconstructed with a 3D glacier model." />
+
+    <link rel="icon" href="favicon/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="favicon/site.webmanifest" />
 
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.9.0/dist/maplibre-gl.css" />
     <link rel="stylesheet" href="style.css" />
@@ -30,6 +42,8 @@
             <p id="paper">
               <a href="https://doi.org/10.5194/tc-19-5913-2025" target="_blank" rel="noopener"
                  title="Henz, A., Reinthaler, J., Nussbaumer, S. U., Leger, T. P. M., Kamleitner, S., Jouvet, G., & Vieli, A. (2025). Alps-wide high-resolution 3D modelling reconstruction of glacier geometry and climatic conditions for the Little Ice Age. The Cryosphere, 19(11), 5913–5937. https://doi.org/10.5194/tc-19-5913-2025">Henz et al. (2025), The Cryosphere</a>
+              · <a href="https://doi.org/10.5281/zenodo.17608701" target="_blank" rel="noopener"
+                   title="The reconstructed rasters, outlines and glacier table on Zenodo (CC BY 4.0)">Data</a>
             </p>
           </div>
           <!-- Collapses everything below the title. The panel covers most of a
@@ -38,9 +52,11 @@
           <button type="button" id="tour-open" title="Show the intro tour" aria-label="Show the intro tour">?</button>
           <button type="button" id="panel-toggle" aria-expanded="true" aria-controls="panel-body">
             <span class="chevron" aria-hidden="true"
-                  ><svg viewBox="0 0 12 12" width="12" height="12" fill="none"
+                  ><svg class="icon-open" viewBox="0 0 12 12" width="12" height="12" fill="none"
                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                         stroke-linejoin="round"><path d="M2.5 4.5 6 8 9.5 4.5" /></svg
+                  ><svg class="icon-closed" viewBox="0 0 12 12" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 2v8M2 6h8" /></svg
                 ></span>
           </button>
         </header>
@@ -66,52 +82,20 @@
           <!-- Only meaningful on the LIA surface, so hidden as a block under "Today". -->
           <div id="lia-controls">
 
-          <!-- Everything that describes a raster layer. Hidden as a block when
-               the catalog cannot be reached, since none of it means anything then. -->
+          <!-- The ice thickness raster (js/rasters.js, listed in data/lia-layers.json).
+               Hidden as a block when the manifest cannot be read. -->
           <div id="raster-controls">
             <section class="control">
-              <label for="product">Product</label>
-              <div id="product" class="segmented" role="radiogroup" aria-label="Product"></div>
-            </section>
-
-            <!-- The measurement, or one of the two QA rasters the store
-                 publishes beside it. Hidden unless the catalog carries more
-                 than one, since a store built before the QA rasters offers
-                 no choice at all — see js/rasters.js. -->
-            <section class="control" id="quantity-row" hidden>
-              <label for="quantity">Layer</label>
-              <div id="quantity" class="segmented" role="radiogroup" aria-label="Layer"></div>
-            </section>
-
-            <section class="control">
-              <label for="opacity">Layer opacity <output id="opacity-value">100%</output></label>
+              <label for="opacity"><span id="raster-title">Ice thickness</span> opacity
+                <output id="opacity-value">100%</output></label>
               <input type="range" id="opacity" min="0" max="100" value="100" step="1" />
             </section>
 
             <section id="legend" class="control">
-              <div class="control-head">
-                <label>Scale</label>
-                <!-- Colour-map credit, appended by js/rasters.js: which map it is
-                     depends on the layer, so the button is rebuilt when it changes. -->
-                <span id="legend-credit"></span>
-              </div>
               <div id="legend-bar"></div>
               <div id="legend-labels"><span id="legend-min"></span><span id="legend-max"></span></div>
-              <!-- A false-colour layer has no ramp: three channels, each carrying
-                   a different measurement. Filled by js/rasters.js, which hides
-                   the bar and its labels whenever it fills this. -->
-              <div id="legend-channels" hidden></div>
             </section>
-
-            <!-- What the selected layer is. Sits under the ramp rather than in a
-                 footer: it describes the thing the controls above just chose. -->
-            <p id="layer-info"></p>
           </div>
-
-          <!-- The LIA surface relief is the hillshade of the 3D terrain (Map options),
-               which carries the LIA surface in this state. The separate 2D patch
-               relief (js/lia-surface.js) is no longer wired: MapLibre's hillshade
-               ignores alpha and drew cliffs at every glacier margin. -->
 
           </div>
 
@@ -129,11 +113,13 @@
                  need to take up the panel before anyone asks for them. -->
             <button type="button" id="inventories-toggle" aria-expanded="false"
                     aria-controls="inventories">
-              <span>Glacier inventories</span><span class="chevron up" aria-hidden="true"
-                    ><svg viewBox="0 0 12 12" width="12" height="12" fill="none"
-                          stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                          stroke-linejoin="round"><path d="M2.5 4.5 6 8 9.5 4.5" /></svg
-                  ></span>
+              <span>Glacier inventories</span><span class="chevron closed" aria-hidden="true"
+                  ><svg class="icon-open" viewBox="0 0 12 12" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round"><path d="M2.5 4.5 6 8 9.5 4.5" /></svg
+                  ><svg class="icon-closed" viewBox="0 0 12 12" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 2v8M2 6h8" /></svg
+                ></span>
             </button>
             <div id="inventories" hidden></div>
           </section>
@@ -146,11 +132,13 @@
             <!-- Same reasoning as the inventories above: the optional layers are
                  off on arrival; World Imagery and its labels are the defaults. -->
             <button type="button" id="extras-toggle" aria-expanded="false" aria-controls="extras">
-              <span>Map options</span><span class="chevron up" aria-hidden="true"
-                    ><svg viewBox="0 0 12 12" width="12" height="12" fill="none"
-                          stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                          stroke-linejoin="round"><path d="M2.5 4.5 6 8 9.5 4.5" /></svg
-                  ></span>
+              <span>Map options</span><span class="chevron closed" aria-hidden="true"
+                  ><svg class="icon-open" viewBox="0 0 12 12" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round"><path d="M2.5 4.5 6 8 9.5 4.5" /></svg
+                  ><svg class="icon-closed" viewBox="0 0 12 12" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 2v8M2 6h8" /></svg
+                ></span>
             </button>
             <div id="extras" hidden>
               <section class="control">
@@ -174,6 +162,48 @@
               </section>
             </div>
           </section>
+
+          <hr />
+
+          <section class="control" id="credits-section">
+            <button type="button" id="credits-toggle" aria-expanded="false" aria-controls="credits">
+              <span>Credits</span><span class="chevron closed" aria-hidden="true"
+                  ><svg class="icon-open" viewBox="0 0 12 12" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                        stroke-linejoin="round"><path d="M2.5 4.5 6 8 9.5 4.5" /></svg
+                  ><svg class="icon-closed" viewBox="0 0 12 12" width="12" height="12" fill="none"
+                        stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 2v8M2 6h8" /></svg
+                ></span>
+            </button>
+            <div id="credits" hidden>
+              <p>
+                <strong>Glacier reconstruction:</strong>
+                <a href="https://doi.org/10.5194/tc-19-5913-2025" target="_blank" rel="noopener">Henz et al. (2025),
+                  The Cryosphere</a>. Data:
+                <a href="https://doi.org/10.5281/zenodo.17608701" target="_blank" rel="noopener">Zenodo,
+                  doi:10.5281/zenodo.17608701</a>. LIA glacier outlines:
+                <a href="https://doi.org/10.5194/tc-19-753-2025" target="_blank" rel="noopener">Reinthaler and
+                  Paul (2025)</a>. Paper, data and the web layers shown here are licensed under
+                <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>.
+              </p>
+              <p>
+                <strong>Viewer:</strong> adapted from Luis Q. Gentner's GLACE viewer. The code was adapted
+                with the help of Claude (Anthropic).
+              </p>
+              <p>
+                <strong>Map data:</strong> imagery © Esri, Maxar, Earthstar Geographics and the GIS User
+                Community; labels © <a href="https://www.openstreetmap.org/copyright" target="_blank"
+                rel="noopener">OpenStreetMap contributors</a>, served by
+                <a href="https://protomaps.com" target="_blank" rel="noopener">Protomaps</a>; terrain ©
+                <a href="https://mapterhorn.com/attribution/" target="_blank" rel="noopener">Mapterhorn</a>;
+                rendering by <a href="https://maplibre.org" target="_blank" rel="noopener">MapLibre</a>.
+              </p>
+              <p>
+                This is a public, non-commercial research site. The basemap, imagery and terrain are used
+                under their providers' terms and attribution requirements.
+              </p>
+            </div>
+          </section>
         </div>
       </aside>
     </div>
@@ -185,23 +215,14 @@
 
          maplibre-gl is ESM-only from v6; its bundle imports a shared chunk and,
          at map creation, a worker file, both beside it. pmtiles imports fflate
-         bare, hence the fourth entry.
-
-         Nothing on the page reads a COG today, but js/cog-rgb.js is still wired
-         up and `lerc` is what it imports when asked for a tile. It is mapped to
-         the package's own file rather than the CDN that builds the reader
-         (`?external=lerc` on cogReaderUrl in js/config.js; change the two
-         together): esm.sh rewrites `globalThis.process` to a Node polyfill,
-         under which lerc's emscripten loader decides it is running in Node and
-         every decode rejects. -->
+         bare, hence the fourth entry. -->
     <script type="importmap">
       {
         "imports": {
           "maplibre-gl": "https://unpkg.com/maplibre-gl@6.9.0/dist/maplibre-gl.mjs",
           "pmtiles": "https://unpkg.com/pmtiles@4.5.0/dist/esm/index.js",
           "fflate": "https://unpkg.com/fflate@0.8.3/esm/browser.js",
-          "@protomaps/basemaps": "https://unpkg.com/@protomaps/basemaps@5.7.2/dist/esm/index.js",
-          "lerc": "https://cdn.jsdelivr.net/npm/lerc@4.2.0/LercDecode.es.js"
+          "@protomaps/basemaps": "https://unpkg.com/@protomaps/basemaps@5.7.2/dist/esm/index.js"
         }
       }
     </script>

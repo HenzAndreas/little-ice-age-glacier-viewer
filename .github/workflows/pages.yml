@@ -24,7 +24,21 @@ env:
   DATA_RELEASE: data-v1
 
 jobs:
+  # The page's regression tests (jsdom, no browser and no data needed). A
+  # failure stops the deploy, so a broken page is never published.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -35,7 +49,7 @@ jobs:
       - name: Assemble the site
         run: |
           mkdir -p _site/tiles
-          cp -r index.html style.css site-config.js js data assets _site/
+          cp -r index.html style.css site-config.js js data favicon _site/
           touch _site/.nojekyll
 
       - name: Fetch the data archives
