@@ -69,3 +69,17 @@ test("an old browser is told why the map is missing", () => {
   assert.ok(guard < html.indexOf('<script type="importmap">'));
   assert.ok(html.indexOf('id="status"') < guard, "after the status line it writes to");
 });
+
+/* GitHub Pages gzips application/octet-stream, which breaks PMTiles byte
+ * ranges (seen on phones as "no content-length header"). The workflow serves
+ * the archives with a .png suffix, which Pages does not compress, and has to
+ * tell the page so. */
+test("the deploy serves the archives under a suffix Pages does not compress", () => {
+  const workflow = fs.readFileSync(path.join(REPO, ".github", "workflows", "pages.yml"), "utf8");
+  assert.match(workflow, /mv "\$f" "\$f\.png"/);
+  assert.match(workflow, /window\.LIA_CONFIG\.archiveSuffix = "\.png";' >> _site\/site-config\.js/);
+  assert.ok(
+    workflow.indexOf("Serve the archives uncompressed") < workflow.indexOf("upload-pages-artifact"),
+    "before the site is uploaded",
+  );
+});

@@ -51,6 +51,16 @@ test("a bare archive name is resolved under tilesBase, an absolute URL is kept",
   assert.equal(rooted.url, "/c.pmtiles");
 });
 
+test("the archive suffix is added to bare names only", () => {
+  const [bare, absolute] = manifestLayers(
+    { layers: [layer(), layer({ id: "b", url: "https://data.example/b.pmtiles" })] },
+    "tiles",
+    ".png",
+  );
+  assert.equal(bare.url, "tiles/thickness.pmtiles.png");
+  assert.equal(absolute.url, "https://data.example/b.pmtiles");
+});
+
 test("a record the page cannot draw is dropped with a warning", async () => {
   const warnings = await captureWarnings(() => {
     const layers = manifestLayers({

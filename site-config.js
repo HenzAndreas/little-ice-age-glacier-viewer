@@ -16,6 +16,8 @@
  * Keys, with their defaults:
  *
  *   tilesBase        "tiles"        where the LIA PMTiles archives are served
+ *   archiveSuffix    ""             appended to each archive name; the Pages
+ *                                   workflow sets ".png" (see pages.yml)
  *   inventoryBase    "data"         where the inventory archives and index live
  *   basemapUrl       Protomaps' hosted API, as a TileJSON URL with an API key
  *   basemapFlavor    "dark"         grayscale | black | dark | light | white

@@ -17,6 +17,10 @@ const DEFAULTS = {
   /* Where the PMTiles archives are served from: `scripts/serve.py` mounts
    * local-data/ here, and the Pages workflow copies the release assets here. */
   tilesBase: "tiles",
+  /* Appended to every archive name under tilesBase. Empty locally; the Pages
+   * workflow sets ".png", because GitHub Pages gzips `.pmtiles` responses,
+   * which breaks the byte ranges PMTiles reads, and leaves images alone. */
+  archiveSuffix: "",
   /* The inventory archives are build outputs committed beside the page, so by
    * default they are served from the same origin as index.html. */
   inventoryBase: "data",
@@ -84,6 +88,7 @@ for (const [key, param] of Object.entries(QUERY_PARAMS)) {
 }
 
 export const TILES_BASE = String(settings.tilesBase).replace(/\/$/, "");
+export const ARCHIVE_SUFFIX = String(settings.archiveSuffix);
 // The display rasters and their legends; archive paths in it are under TILES_BASE.
 export const LAYER_MANIFEST_URL = "data/lia-layers.json";
 
@@ -100,10 +105,10 @@ export const TERRAIN_TILEJSON = settings.terrainTilejson;
 // The LIA surface patch, z0-z12, from processing-files/build_lia_surface_patch.py:
 // elevation in R and G, blend weight in B, ice mask in alpha. The 3D terrain
 // blends it into Mapterhorn per tile — see js/lia-dem.js.
-export const LIA_SURFACE_PATCH_URL = `${TILES_BASE}/Alps-wide_LIA_surface_patch.pmtiles`;
+export const LIA_SURFACE_PATCH_URL = `${TILES_BASE}/Alps-wide_LIA_surface_patch.pmtiles${ARCHIVE_SUFFIX}`;
 // LIA glacier outlines with popup attributes, from
 // processing-files/build_lia_outlines_pmtiles.py (vector layer `lia_outlines`).
-export const LIA_OUTLINES_URL = `${TILES_BASE}/Alps-wide_LIA_outlines.pmtiles`;
+export const LIA_OUTLINES_URL = `${TILES_BASE}/Alps-wide_LIA_outlines.pmtiles${ARCHIVE_SUFFIX}`;
 export const TERRAIN_CREDIT = settings.terrainCredit;
 
 export const INITIAL_VIEW = settings.initialView;

@@ -9,7 +9,7 @@
  * values of its own.
  */
 
-import { LAYER_MANIFEST_URL, TILES_BASE } from "./config.js";
+import { ARCHIVE_SUFFIX, LAYER_MANIFEST_URL, TILES_BASE } from "./config.js";
 import { addStacked, map, styleReady } from "./map.js";
 import { clearStatus, el, isFiniteNumber, isNonEmptyString, setStatus } from "./ui.js";
 
@@ -48,12 +48,13 @@ function drawable(layer) {
 
 /**
  * The usable layers of a manifest, with each archive path resolved under
- * `tilesBase`. Throws when nothing in it can be drawn.
+ * `tilesBase` (plus `archiveSuffix`). Throws when nothing in it can be drawn.
  *
  * @param {object} manifest  the parsed data/lia-layers.json
  * @param {string} [tilesBase]
+ * @param {string} [suffix]
  */
-export function manifestLayers(manifest, tilesBase = TILES_BASE) {
+export function manifestLayers(manifest, tilesBase = TILES_BASE, suffix = ARCHIVE_SUFFIX) {
   const records = Array.isArray(manifest?.layers) ? manifest.layers : [];
   const usable = records.filter((layer) => {
     const ok = drawable(layer);
@@ -64,7 +65,7 @@ export function manifestLayers(manifest, tilesBase = TILES_BASE) {
   return usable.map((layer) => ({
     ...layer,
     // An absolute URL is kept as it is; a bare file name lives under tilesBase.
-    url: /^[a-z]+:|^\//i.test(layer.url) ? layer.url : `${tilesBase}/${layer.url}`,
+    url: /^[a-z]+:|^\//i.test(layer.url) ? layer.url : `${tilesBase}/${layer.url}${suffix}`,
   }));
 }
 

@@ -51,6 +51,13 @@ test("site config repoints the archives, and everything derived follows", async 
   assert.equal(config.WORLD_IMAGERY_URL, "https://imagery.example/{z}/{x}/{y}.jpg");
 });
 
+test("an archive suffix follows every archive name", async () => {
+  const config = await load({ site: { archiveSuffix: ".png" } });
+  assert.equal(config.LIA_OUTLINES_URL, "tiles/Alps-wide_LIA_outlines.pmtiles.png");
+  assert.equal(config.LIA_SURFACE_PATCH_URL, "tiles/Alps-wide_LIA_surface_patch.pmtiles.png");
+  assert.equal((await load()).ARCHIVE_SUFFIX, "", "and is empty by default");
+});
+
 test("a partial nested override keeps the rest of the object", async () => {
   const view = await load({ site: { initialView: { zoom: 8 } } });
   assert.equal(view.INITIAL_VIEW.zoom, 8);

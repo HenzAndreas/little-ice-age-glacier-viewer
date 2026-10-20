@@ -56,6 +56,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh release download "$DATA_RELEASE" --pattern '*.pmtiles' --dir _site/tiles
 
+      # GitHub Pages gzips `.pmtiles` (application/octet-stream) for any browser
+      # that accepts gzip, and the byte ranges PMTiles reads then point into the
+      # compressed stream, so tiles fail to load. Images are served as they are,
+      # so online the archives carry a `.png` suffix and the page is told so.
+      - name: Serve the archives uncompressed
+        run: |
+          for f in _site/tiles/*.pmtiles; do mv "$f" "$f.png"; done
+          echo 'window.LIA_CONFIG.archiveSuffix = ".png";' >> _site/site-config.js
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
