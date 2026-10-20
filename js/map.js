@@ -181,6 +181,21 @@ map.addControl(
   "bottom-right",
 );
 
+/* MapLibre opens the compact attribution on arrival and only folds it after
+ * the first drag, so the full credits line would cover the bottom of the map.
+ * It starts folded to its ⓘ instead; a tap opens it, and every credit is also
+ * in the panel's Credits section. Removing the class is the same step
+ * MapLibre's own drag handler takes. Repeated on `load` in case the control
+ * only switched to compact once its first attributions arrived. */
+function foldAttribution() {
+  map
+    .getContainer()
+    .querySelector(".maplibregl-ctrl-attrib.maplibregl-compact")
+    ?.classList.remove("maplibregl-compact-show");
+}
+foldAttribution();
+map.once("load", foldAttribution);
+
 map.on("error", (event) => {
   if (event.error) console.warn("maplibre:", event.error.message);
 });
