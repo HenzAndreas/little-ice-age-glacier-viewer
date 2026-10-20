@@ -2,7 +2,6 @@
 # the PMTiles archives come from a GitHub Release (they are build outputs, kept
 # out of Git history) and are copied to tiles/, the same path the local server
 # mounts local-data/ at, so no URL in the code changes between local and online.
-# See DEPLOYMENT.md.
 name: Deploy to GitHub Pages
 
 on:

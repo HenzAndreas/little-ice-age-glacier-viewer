@@ -30,3 +30,11 @@ __pycache__/
 *:Zone.Identifier
 
 .dmypy*.json
+
+# Private project notes and working docs, not for the public repository.
+NOTES.md
+TASKS.md
+DEPLOYMENT.md
+DEM_WORKFLOW.md
+AGENTS.md
+.vscode/
