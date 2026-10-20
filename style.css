@@ -22,6 +22,9 @@ html, body {
      take nothing from this — `appearance: none` already took them off the
      platform entirely. */
   color-scheme: dark;
+  /* iOS enlarges text on its own when the phone is turned to landscape. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   margin: 0;
   height: 100%;
   font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -30,6 +33,13 @@ html, body {
 }
 
 #map { position: absolute; inset: 0; }
+
+/* A quick double tap on a panel button would otherwise zoom the whole page on
+   iOS instead of pressing the button twice. The map handles its own gestures. */
+#panel-shell,
+#tour,
+.credit-popover,
+.maplibregl-ctrl-group { touch-action: manipulation; }
 
 /* The sky around the globe. MapLibre clears its canvas to transparent and
    paints the basemap's background on the globe alone, so #map's own background
@@ -542,6 +552,38 @@ input[type="range"] { width: 100%; margin: 0; accent-color: #fff; }
      run or the reader has tapped. On wide screens neither class is present and
      the body is simply visible. */
   #panel:not(.expanded) #panel-body { display: none; }
+
+  /* Collapsed on a phone, the panel is a slim see-through label: the title in
+     small type and the two buttons, hugging its content rather than spanning
+     the screen, so the map stays visible behind and beside it. The frosted
+     pane and the shadow are dropped; a text shadow keeps it legible over
+     snow and imagery alike. */
+  #panel-shell:has(> #panel:not(.expanded)) {
+    right: auto;
+    box-shadow: none;
+  }
+  #panel-shell:has(> #panel:not(.expanded)) #panel-glass { display: none; }
+  #panel:not(.expanded) {
+    padding: 5px 8px;
+    background: hsl(var(--glass-tint) / 0.3);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: none;
+  }
+  #panel:not(.expanded) header { align-items: center; gap: 6px; }
+  #panel:not(.expanded) h1 {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  }
+  #panel:not(.expanded) #subtitle,
+  #panel:not(.expanded) #paper { display: none; }
+  #panel:not(.expanded) #tour-open,
+  #panel:not(.expanded) #panel-toggle {
+    margin: 0;
+    color: var(--text);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+  }
 }
 
 /* Inventory overlay toggles: a checkbox plus the colour its outlines draw in. */

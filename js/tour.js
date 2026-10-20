@@ -33,8 +33,7 @@ const STEPS = [
     target: "#period-row",
     title: "Then and now",
     text:
-      "Flip this switch to compare the Little Ice Age glaciers with today's landscape. " +
-      "The amber outlines stay on in both states, so you can see how far the ice has retreated.",
+      "Flip this switch to compare the Little Ice Age glaciers with today's landscape.",
   },
   {
     target: ".maplibregl-ctrl-3d",

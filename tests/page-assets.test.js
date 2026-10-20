@@ -57,3 +57,15 @@ test("the deploy stages every directory the page reads from", () => {
     assert.match(stage, new RegExp(`\\b${root}\\b`), `pages.yml never copies ${root}`);
   }
 });
+
+/* Safari before 16.4 has neither import maps nor OffscreenCanvas, and fails
+ * inside the modules with nothing on screen. The guard is a classic script, so
+ * it must come before the import map and the modules it reports on. */
+test("an old browser is told why the map is missing", () => {
+  const html = fs.readFileSync(path.join(REPO, "index.html"), "utf8");
+  const guard = html.indexOf('HTMLScriptElement.supports("importmap")');
+  assert.notEqual(guard, -1, "the guard checks for import maps");
+  assert.ok(html.indexOf("typeof OffscreenCanvas") > -1, "and for OffscreenCanvas");
+  assert.ok(guard < html.indexOf('<script type="importmap">'));
+  assert.ok(html.indexOf('id="status"') < guard, "after the status line it writes to");
+});

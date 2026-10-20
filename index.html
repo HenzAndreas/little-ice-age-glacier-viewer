@@ -210,6 +210,23 @@
 
     <div id="status" hidden></div>
 
+    <!-- A classic script, so it runs where the modules below cannot: browsers
+         without import maps or OffscreenCanvas (Safari before 16.4, so every
+         iPhone that cannot update past iOS 15) would otherwise show the panel
+         over an empty map and never say why. -->
+    <script>
+      if (
+        !(window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports("importmap")) ||
+        typeof OffscreenCanvas === "undefined"
+      ) {
+        var status = document.getElementById("status");
+        status.textContent =
+          "This browser is too old to draw the map. On an iPhone, update to iOS 16.4 or later; " +
+          "otherwise use a current version of Safari, Chrome, Firefox or Edge.";
+        status.hidden = false;
+      }
+    </script>
+
     <!-- Every library, pinned. An import map has to be parsed before the first
          module loads, so this cannot move below the modules.
 
