@@ -1,0 +1,553 @@
+{
+  "type": "Feature",
+  "stac_version": "1.1.0",
+  "stac_extensions": [
+    "https://stac-extensions.github.io/sar/v1.3.2/schema.json",
+    "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
+    "https://stac-extensions.github.io/raster/v2.0.0/schema.json",
+    "https://stac-extensions.github.io/file/v2.1.0/schema.json",
+    "https://stac-extensions.github.io/version/v1.2.0/schema.json"
+  ],
+  "id": "ch-mosaic-2022",
+  "geometry": null,
+  "bbox": [
+    6.796066566434904,
+    45.85497680754794,
+    10.44539311148726,
+    47.31316584658046
+  ],
+  "properties": {
+    "start_datetime": "2022-06-20T00:00:00Z",
+    "end_datetime": "2022-09-18T00:00:00Z",
+    "constellation": "sentinel-1",
+    "instruments": [
+      "c-sar"
+    ],
+    "sar:instrument_mode": "IW",
+    "sar:frequency_band": "C",
+    "sar:polarizations": [
+      "VV",
+      "VH"
+    ],
+    "proj:code": "EPSG:3035",
+    "proj:shape": [
+      4350,
+      7200
+    ],
+    "proj:transform": [
+      40.0,
+      0.0,
+      4069000.0,
+      0.0,
+      -40.0,
+      2698000.0
+    ],
+    "version": "0.1",
+    "glace:build_fingerprint": "d968edfda0d6d0463e609e5f6a2efc35c31938256bd2f40fca615c28f9a6b90d",
+    "description": "Annual mosaics of the GLACE composites for 2022, on the fixed equal-area grid (EPSG:3035, 40 m) every year of this collection shares.",
+    "datetime": "2022-08-04T00:00:00Z"
+  },
+  "links": [
+    {
+      "rel": "root",
+      "href": "../../catalog.json",
+      "type": "application/json",
+      "title": "GLACE Switzerland"
+    },
+    {
+      "rel": "collection",
+      "href": "../collection.json",
+      "type": "application/json",
+      "title": "GLACE mosaics"
+    },
+    {
+      "rel": "parent",
+      "href": "../collection.json",
+      "type": "application/json",
+      "title": "Annual mosaics"
+    },
+    {
+      "rel": "ceos-ard-specification",
+      "href": "https://ceos.org/ard/files/PFS/SAR/v1.3.1/CEOS-ARD_PFS_SAR_v1.3.1.pdf",
+      "type": "application/pdf",
+      "title": "CEOS-ARD PFS for Synthetic Aperture Radar v1.3.1"
+    }
+  ],
+  "assets": {
+    "coh12_rgb_viz": {
+      "href": "coh12_rgb_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "coh12_rgb web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of coh12_rgb on WebMercatorQuad z5-z13, stretched 0.1-0.75 as the collection's style for 2022 declares. Not for analysis: read coh12_vv.tif and coh12_vh.tif.",
+      "file:size": 27035071,
+      "file:checksum": "1220b0a8b3332569272637442c0b636640d18c08e66c2b8cb6b806028477b3a554ea",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "coh12_vh": {
+      "href": "coh12_vh.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "coh12_vh annual mosaic",
+      "bands": [
+        {
+          "name": "coh12_vh",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 0.9810740351676941,
+            "mean": 0.28088257368444697,
+            "minimum": 0.0354437381029129,
+            "stddev": 0.15896778945745235,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 17661591,
+      "file:checksum": "1220bf9a38d50b3ed756d97d05d4e0f719039f31fcdf73d464f784e8a7f10ee318d8",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "data",
+        "cloud-optimized"
+      ]
+    },
+    "coh12_vh_qa_cqm": {
+      "href": "coh12_vh_qa_cqm.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "coh12_vh_qa_cqm annual mosaic",
+      "bands": [
+        {
+          "name": "coh12_vh_qa_cqm",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 17980.982421875,
+            "mean": 2.4990976094370887,
+            "minimum": 0.025052815675735474,
+            "stddev": 16.641238877449105,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 22998326,
+      "file:checksum": "122013e6cc68a1bdfb17f32d5785d8a1c5ee423fd2f0a90ae32d3048a280245b3c08",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "quality"
+      ]
+    },
+    "coh12_vh_qa_cqm_viz": {
+      "href": "coh12_vh_qa_cqm_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "coh12_vh_qa_cqm web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of coh12_vh_qa_cqm on WebMercatorQuad z5-z13, stretched -3-10 dB through cmc.glasgow as the collection's style for 2022 declares. Not for analysis: read coh12_vh_qa_cqm.tif.",
+      "file:size": 20826366,
+      "file:checksum": "1220cd63711ce70103036bd98e61e5e3a32c732fd0a0f7de43d5fdf7ea67382b929c",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "coh12_vh_qa_num": {
+      "href": "coh12_vh_qa_num.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "coh12_vh_qa_num annual mosaic",
+      "bands": [
+        {
+          "name": "coh12_vh_qa_num",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 26.0,
+            "mean": 19.127407713190962,
+            "minimum": 3.9374570846557617,
+            "stddev": 3.5632530431831557,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 15653091,
+      "file:checksum": "12202d242802df00f10f26a51835b3e8352ed725360703fdb0f3419c2d1a8e846925",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "quality"
+      ]
+    },
+    "coh12_vh_qa_num_viz": {
+      "href": "coh12_vh_qa_num_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "coh12_vh_qa_num web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of coh12_vh_qa_num on WebMercatorQuad z5-z13, stretched 0-90 through cmc.glasgow as the collection's style for 2022 declares. Not for analysis: read coh12_vh_qa_num.tif.",
+      "file:size": 1239924,
+      "file:checksum": "12207f2cffaf5a581521a13cb219648ab8dd13771da50b921b5eb3db4097907175ea",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "coh12_vh_viz": {
+      "href": "coh12_vh_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "coh12_vh web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of coh12_vh on WebMercatorQuad z5-z13, stretched 0.1-0.55 through cmc.lipari as the collection's style for 2022 declares. Not for analysis: read coh12_vh.tif.",
+      "file:size": 27803072,
+      "file:checksum": "1220596da869e4e9a556c2412ebd7fc07aa069698534d7e103e8785a954db359d4b9",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "coh12_vv": {
+      "href": "coh12_vv.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "coh12_vv annual mosaic",
+      "bands": [
+        {
+          "name": "coh12_vv",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 0.9779447913169861,
+            "mean": 0.39930181918588925,
+            "minimum": 0.03853938728570938,
+            "stddev": 0.2251316210253277,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 18160618,
+      "file:checksum": "122067da8807346a88e6c3c469b0e2cf76ec317c14d9beba34df483b87e7f439a5d2",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "data",
+        "cloud-optimized"
+      ]
+    },
+    "coh12_vv_qa_cqm": {
+      "href": "coh12_vv_qa_cqm.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "coh12_vv_qa_cqm annual mosaic",
+      "bands": [
+        {
+          "name": "coh12_vv_qa_cqm",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 17969.435546875,
+            "mean": 2.498560962951952,
+            "minimum": 0.025052815675735474,
+            "stddev": 16.63169654498181,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 22997956,
+      "file:checksum": "1220646ff0aec440fe8162b43b7b782f7edf04ca3f199556d9e5b50a3fd742c70e76",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "quality"
+      ]
+    },
+    "coh12_vv_qa_cqm_viz": {
+      "href": "coh12_vv_qa_cqm_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "coh12_vv_qa_cqm web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of coh12_vv_qa_cqm on WebMercatorQuad z5-z13, stretched -3-10 dB through cmc.glasgow as the collection's style for 2022 declares. Not for analysis: read coh12_vv_qa_cqm.tif.",
+      "file:size": 20812488,
+      "file:checksum": "1220218500681d919958cb7dbb376860f5b0d85622a6a8d6f261ca4df1df97a18976",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "coh12_vv_qa_num": {
+      "href": "coh12_vv_qa_num.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "coh12_vv_qa_num annual mosaic",
+      "bands": [
+        {
+          "name": "coh12_vv_qa_num",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 26.0,
+            "mean": 19.138577910180988,
+            "minimum": 4.0,
+            "stddev": 3.564773778605459,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 9527906,
+      "file:checksum": "1220b12f37c9aa71cbc000732967e2cd1044da176ea5539a631ec3c6e94f11f1a2c2",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "quality"
+      ]
+    },
+    "coh12_vv_qa_num_viz": {
+      "href": "coh12_vv_qa_num_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "coh12_vv_qa_num web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of coh12_vv_qa_num on WebMercatorQuad z5-z13, stretched 0-90 through cmc.glasgow as the collection's style for 2022 declares. Not for analysis: read coh12_vv_qa_num.tif.",
+      "file:size": 1232410,
+      "file:checksum": "1220411f6997ab8a5e72bf5a7bb979a79a411e4e22286439604232d626119740f1de",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "coh12_vv_viz": {
+      "href": "coh12_vv_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "coh12_vv web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of coh12_vv on WebMercatorQuad z5-z13, stretched 0.1-0.75 through cmc.lipari as the collection's style for 2022 declares. Not for analysis: read coh12_vv.tif.",
+      "file:size": 24894708,
+      "file:checksum": "12206b214e152d7b92b1026a86ae78217ad839b9a2d893becb7387413a76d14e283b",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "rtc_rgb_viz": {
+      "href": "rtc_rgb_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "rtc_rgb web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of rtc_rgb on WebMercatorQuad z5-z13, stretched -16.5--4 dB as the collection's style for 2022 declares. Not for analysis: read rtc_vv.tif and rtc_vh.tif.",
+      "file:size": 41057828,
+      "file:checksum": "12209d007b2fdb517ffa9f778dc15543c563b6e60ea09d626b8d261a111e4cd96e09",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "rtc_vh": {
+      "href": "rtc_vh.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "rtc_vh annual mosaic",
+      "bands": [
+        {
+          "name": "rtc_vh",
+          "data_type": "float32",
+          "nodata": "nan",
+          "unit": "linear power",
+          "statistics": {
+            "maximum": 13.22424030303955,
+            "mean": 0.030079540526161703,
+            "minimum": 0.0005115942913107574,
+            "stddev": 0.028209288648260354,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 18771625,
+      "file:checksum": "122086b7e5fee73733287f33b94de2cb339101f93abb02c8b6e6f7d6a32d30b88b02",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "data",
+        "cloud-optimized"
+      ]
+    },
+    "rtc_vh_qa_cqm": {
+      "href": "rtc_vh_qa_cqm.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "rtc_vh_qa_cqm annual mosaic",
+      "bands": [
+        {
+          "name": "rtc_vh_qa_cqm",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 192.7893524169922,
+            "mean": 1.7877478192186824,
+            "minimum": 0.019436132162809372,
+            "stddev": 1.3656791843735885,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 22472074,
+      "file:checksum": "12201fa409426e153df8a00d0fcc19b0679f782ffe1af6a3c088cc51ae79112e996a",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "quality"
+      ]
+    },
+    "rtc_vh_qa_cqm_viz": {
+      "href": "rtc_vh_qa_cqm_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "rtc_vh_qa_cqm web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of rtc_vh_qa_cqm on WebMercatorQuad z5-z13, stretched -4-8 dB through cmc.glasgow as the collection's style for 2022 declares. Not for analysis: read rtc_vh_qa_cqm.tif.",
+      "file:size": 22932998,
+      "file:checksum": "1220cd928c2a5464203e7f2ba357db21957c86dcb15eec6fb82713cd983687a17504",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "rtc_vh_qa_num": {
+      "href": "rtc_vh_qa_num.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "rtc_vh_qa_num annual mosaic",
+      "bands": [
+        {
+          "name": "rtc_vh_qa_num",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 30.0,
+            "mean": 22.541035180064462,
+            "minimum": 5.978515148162842,
+            "stddev": 4.2618896233306796,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 6433068,
+      "file:checksum": "1220651bcd42eb9c45935d630215427684bc384112c4b7a51e5d731d5d5123a21080",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "quality"
+      ]
+    },
+    "rtc_vh_qa_num_viz": {
+      "href": "rtc_vh_qa_num_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "rtc_vh_qa_num web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of rtc_vh_qa_num on WebMercatorQuad z5-z13, stretched 0-90 through cmc.glasgow as the collection's style for 2022 declares. Not for analysis: read rtc_vh_qa_num.tif.",
+      "file:size": 1863326,
+      "file:checksum": "1220891292a1c45c3c3c5a69fa4132efcbb045b5b8117170b3b5a1ad0033afa0d295",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "rtc_vh_viz": {
+      "href": "rtc_vh_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "rtc_vh web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of rtc_vh on WebMercatorQuad z5-z13, stretched -23.5--11 dB through cmc.grayC as the collection's style for 2022 declares. Not for analysis: read rtc_vh.tif.",
+      "file:size": 33066781,
+      "file:checksum": "1220092d7c29e51750acb3c2136d086285075c2dc7b52afac023b0ae0beb801fdc53",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "rtc_vv": {
+      "href": "rtc_vv.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "rtc_vv annual mosaic",
+      "bands": [
+        {
+          "name": "rtc_vv",
+          "data_type": "float32",
+          "nodata": "nan",
+          "unit": "linear power",
+          "statistics": {
+            "maximum": 96.27769470214844,
+            "mean": 0.1473465252944669,
+            "minimum": 0.0015684154350310564,
+            "stddev": 0.17586043366116808,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 22412633,
+      "file:checksum": "1220968a12238bc54447131ef83ee24df1ec67e712b84abfc57ab4dab80922e0d87a",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "data",
+        "cloud-optimized"
+      ]
+    },
+    "rtc_vv_qa_cqm": {
+      "href": "rtc_vv_qa_cqm.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "rtc_vv_qa_cqm annual mosaic",
+      "bands": [
+        {
+          "name": "rtc_vv_qa_cqm",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 192.7893524169922,
+            "mean": 1.787550267318993,
+            "minimum": 0.019436132162809372,
+            "stddev": 1.3617714245476056,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 22481424,
+      "file:checksum": "12207f09f1877604cac3e0331ca5bded9f1bca7f3f217b0c7991ba075c89fec9e94c",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "quality"
+      ]
+    },
+    "rtc_vv_qa_cqm_viz": {
+      "href": "rtc_vv_qa_cqm_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "rtc_vv_qa_cqm web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of rtc_vv_qa_cqm on WebMercatorQuad z5-z13, stretched -4-8 dB through cmc.glasgow as the collection's style for 2022 declares. Not for analysis: read rtc_vv_qa_cqm.tif.",
+      "file:size": 22930675,
+      "file:checksum": "1220732fde6f7a105c3959433a89cef7b0055afbb10a9b8c4c4f0fe039fa48c43b1b",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "rtc_vv_qa_num": {
+      "href": "rtc_vv_qa_num.tif",
+      "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+      "title": "rtc_vv_qa_num annual mosaic",
+      "bands": [
+        {
+          "name": "rtc_vv_qa_num",
+          "data_type": "float32",
+          "nodata": "nan",
+          "statistics": {
+            "maximum": 30.0,
+            "mean": 22.541036738210362,
+            "minimum": 5.978515148162842,
+            "stddev": 4.261890350442662,
+            "valid_percent": 28.60978607918263
+          }
+        }
+      ],
+      "file:size": 6433054,
+      "file:checksum": "12204cd543cd9fd8c5ce8e66aa9921d2ce8e290028941fc5ecd8077bfce64b16c783",
+      "raster:spatial_resolution": 40.0,
+      "roles": [
+        "quality"
+      ]
+    },
+    "rtc_vv_qa_num_viz": {
+      "href": "rtc_vv_qa_num_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "rtc_vv_qa_num web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of rtc_vv_qa_num on WebMercatorQuad z5-z13, stretched 0-90 through cmc.glasgow as the collection's style for 2022 declares. Not for analysis: read rtc_vv_qa_num.tif.",
+      "file:size": 1863253,
+      "file:checksum": "1220f2d116eb6c3dcf994905b9f0a2cde698e7bb4ed885dff5a020dae586c73f5133",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    },
+    "rtc_vv_viz": {
+      "href": "rtc_vv_viz.pmtiles",
+      "type": "application/vnd.pmtiles",
+      "title": "rtc_vv web-map tiles",
+      "description": "Pre-styled 8-bit WebP rendering of rtc_vv on WebMercatorQuad z5-z13, stretched -16.5--4 dB through cmc.grayC as the collection's style for 2022 declares. Not for analysis: read rtc_vv.tif.",
+      "file:size": 34094882,
+      "file:checksum": "1220598a1206d0b75fc4a54c23b871c550135025fddbfddd31e367c42d6ebf42b9c6",
+      "proj:code": "EPSG:3857",
+      "roles": [
+        "visual"
+      ]
+    }
+  },
+  "collection": "glace-ch-mosaics"
+}

@@ -1,0 +1,16 @@
+{
+  "_maintenance": "#!!!! ADD HERE NEW DISPLAY PMTILES LAYERS !!!! Add layer records to this array; `url` is relative to tilesBase. Only the first layer is shown today.",
+  "layers": [
+    {
+      "id": "lia-thickness",
+      "title": "Ice thickness",
+      "url": "Alps-wide_LIA_glacier_thickness_soft.pmtiles",
+      "minZoom": 0,
+      "maxZoom": 12,
+      "vmin": 0,
+      "vmax": 690,
+      "units": "m",
+      "colors": ["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"]
+    }
+  ]
+}

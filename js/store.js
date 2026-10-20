@@ -1,0 +1,280 @@
+/*
+ * Where the raster layers come from: the published catalog, read directly.
+ *
+ * The store publishes no manifest of its own — every field the page needs has
+ * a standard home in the catalog — so this module reads those homes and hands
+ * js/rasters.js one record per archive. Three documents, each answering one
+ * question:
+ *
+ *   mosaics/collection.json   which archives exist — one `rel: "pmtiles"` link
+ *                             each — and where the styles and the items are
+ *   one style per year        how each layer is drawn: ramp, stretch, unit, zooms
+ *   each year's item.json     the acquisition window under the ramp
+ *
+ * The archives are enumerated from the collection, not from the styles, because
+ * the collection is the inventory. The two are joined on `pmtiles:layers`: a
+ * layer is drawn from the style of its own year, and a year the collection
+ * publishes no style for falls back to the default style's same stem — the
+ * stretch and ramp are fixed per layer on purpose. Bounds and attribution are
+ * declared nowhere: the PMTiles header carries both. See "Reading the catalog"
+ * in AGENTS.md.
+ */
+
+import { LOCAL_LAYER_MANIFEST_URL, MOSAIC_COLLECTION_URL } from "./config.js";
+
+export const isFiniteNumber = (value) => typeof value === "number" && Number.isFinite(value);
+export const isNonEmptyString = (value) => typeof value === "string" && value !== "";
+
+async function readJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`${url} — HTTP ${response.status}`);
+  return response.json();
+}
+
+/* Hrefs in a STAC document are relative to the document that carries them.
+ * Resolved against the collection's own URL rather than against `tilesBase`, so
+ * a store that lays its files out differently is still followed correctly. */
+const resolve = (href, base) => new URL(href, base).href;
+
+/* The style layer id an archive link names, split into what the page needs from
+ * it: `glace-coh12_vv_qa_num-2024` is the QA-NUM archive of COH12 VV for 2024.
+ *
+ * The stem is then split once more, on its first underscore, into the product
+ * and everything after it — which is the composite polarization field the panel
+ * spends on two rows (see js/rasters.js). Both halves are upper-cased, since the
+ * archives are named in lower case and the panel names them as the catalog's own
+ * prose does. */
+const LAYER_ID = /^glace-([a-z0-9]+)_([a-z0-9_]+)-(\d{4})$/;
+
+function parseLayerId(id) {
+  const at = LAYER_ID.exec(id);
+  if (at === null) return null;
+  return {
+    id,
+    stem: `${at[1]}_${at[2]}`,
+    product: at[1].toUpperCase(),
+    polarization: at[2].toUpperCase(),
+    year: Number(at[3]),
+  };
+}
+
+/* Every archive the collection publishes, as {id, url}. `pmtiles:layers` is the
+ * join key and the identity both; a link without one names nothing this page can
+ * describe, and there is no second way to guess at it. */
+function archives(collection, collectionUrl) {
+  const links = Array.isArray(collection?.links) ? collection.links : [];
+  const found = [];
+  for (const link of links) {
+    if (link?.rel !== "pmtiles" || !isNonEmptyString(link.href)) continue;
+    const ids = Array.isArray(link["pmtiles:layers"]) ? link["pmtiles:layers"] : [];
+    for (const id of ids) {
+      const parsed = parseLayerId(id);
+      if (parsed !== null) found.push({ ...parsed, url: resolve(link.href, collectionUrl) });
+    }
+  }
+  return found;
+}
+
+/* The styles the collection nominates, keyed by the year each one describes and,
+ * under "default", the one a client should open with.
+ *
+ * The store publishes one style per year — the year is the only generated part of
+ * a reviewed template — so the key and the filename both end in it. A collection
+ * with a single undated style lands under "default" alone, which is the fallback
+ * every year then uses.
+ *
+ * @param {object} collection  the mosaics collection
+ * @returns {Map<number|string, string>}
+ */
+export function styleHrefs(collection) {
+  const out = new Map();
+  for (const [key, asset] of Object.entries(collection?.assets ?? {})) {
+    if (!Array.isArray(asset?.roles) || !asset.roles.includes("style")) continue;
+    if (!isNonEmptyString(asset.href)) continue;
+    const year = /(\d{4})(?:\.json)?$/.exec(asset.href) ?? /(\d{4})$/.exec(key);
+    if (year) out.set(Number(year[1]), asset.href);
+    if (asset.roles.includes("default")) out.set("default", asset.href);
+  }
+  if (out.size === 0) throw new Error("the mosaics collection names no style asset");
+  return out;
+}
+
+/* How one layer is drawn, keyed by style layer id and, as a fallback, by stem.
+ *
+ * `metadata.portolan:legend` is the store's source of truth for the ramp and the
+ * range baked into the archive — the build reads the same block — so everything
+ * descriptive is taken from it verbatim and nothing is kept here. The source
+ * beside it carries the zooms. */
+function legends(style) {
+  const sources = style?.sources ?? {};
+  const byId = new Map();
+  const byStem = new Map();
+  for (const layer of Array.isArray(style?.layers) ? style.layers : []) {
+    const legend = layer?.metadata?.["portolan:legend"];
+    // A style may carry layers that are not GLACE rasters at all. Only the ones
+    // that describe themselves as one are of any interest here.
+    if (legend === null || typeof legend !== "object") continue;
+    const parsed = parseLayerId(layer.id);
+    if (parsed === null) continue;
+    const source = sources[layer.source] ?? {};
+    const entry = {
+      cmap: legend.cmap,
+      vmin: legend.vmin,
+      vmax: legend.vmax,
+      units: typeof legend.unit === "string" ? legend.unit : "",
+      colors: (Array.isArray(legend.stops) ? legend.stops : [])
+        .map((stop) => stop?.color)
+        .filter(isNonEmptyString),
+      channels: legend.channels ?? null,
+      minZoom: source.minzoom,
+      maxZoom: source.maxzoom,
+    };
+    byId.set(layer.id, entry);
+    if (!byStem.has(parsed.stem)) byStem.set(parsed.stem, entry);
+  }
+  return { byId, byStem };
+}
+
+/* The polarization value the false colour is published under. It is not a
+ * polarization at all — it is a channel recipe sharing the field — and it is the
+ * one layer with no ramp, so both this module and the panel have to know it. */
+export const FALSE_COLOUR = "RGB";
+
+/* A layer the page can actually draw. The catalog is fetched from wherever
+ * `?tiles=` points, which is a genuine trust boundary, so what is read out of it
+ * is checked rather than trusted: an entry that is structurally valid but
+ * incomplete would otherwise fail much later as an undefined read inside
+ * MapLibre. One unusable layer is dropped with a warning rather than taking the
+ * page down with it. */
+function drawable(layer) {
+  // A raster source with no zooms cannot draw whatever else it carries.
+  if (!isFiniteNumber(layer.minZoom) || !isFiniteNumber(layer.maxZoom)) return false;
+  if (layer.minZoom > layer.maxZoom) return false;
+
+  /* The false colour has three channels and neither a ramp nor one stretch —
+   * each channel carries its own. Those are checked where the legend is drawn
+   * and cost the layer only its numbers, since the archive is pre-styled and
+   * draws with or without them. */
+  if (layer.polarization === FALSE_COLOUR) return true;
+
+  return (
+    isFiniteNumber(layer.vmin) &&
+    isFiniteNumber(layer.vmax) &&
+    // A stretch whose ends are equal or backwards renders the ramp meaninglessly.
+    layer.vmin < layer.vmax &&
+    // A ramp is how a single-band layer is drawn, so one is required of it.
+    Array.isArray(layer.colors) &&
+    layer.colors.length > 0 &&
+    layer.colors.every(isNonEmptyString)
+  );
+}
+
+/* An acquisition window, as `YYYY-MM-DD` pair, or nothing. Descriptive rather
+ * than structural — the layer draws identically without it — so a year whose
+ * item is unreadable simply loses the line under its ramp. */
+const ISO_DATETIME = /^(\d{4}-\d{2}-\d{2})T/;
+
+function acquisitionWindow(item) {
+  const start = ISO_DATETIME.exec(item?.properties?.start_datetime ?? "");
+  const end = ISO_DATETIME.exec(item?.properties?.end_datetime ?? "");
+  return start && end ? { startDate: start[1], endDate: end[1] } : {};
+}
+
+/**
+ * The layers of the store, from its three documents.
+ *
+ * Pure, so the join can be exercised without a network: the reads are in
+ * readStore() below.
+ *
+ * @param {object} collection  the mosaics collection
+ * @param {string} collectionUrl  where it was read from, for relative hrefs
+ * @param {object|Map<number|string, object>} style  the MapLibre style it
+ *   nominates, or one per year keyed as styleHrefs() keys them
+ * @param {Map<number, object>} windows  year -> {startDate, endDate}
+ * @returns {object[]}
+ */
+export function storeLayers(collection, collectionUrl, style, windows = new Map()) {
+  /* One style or many: a single document is the default for every year, which is
+   * what a collection that publishes one undated style means. */
+  const styles = style instanceof Map ? style : new Map([["default", style]]);
+  const drawn = new Map([...styles].map(([key, document]) => [key, legends(document)]));
+  const fallback = drawn.get("default");
+  const layers = [];
+  for (const archive of archives(collection, collectionUrl)) {
+    const own = drawn.get(archive.year);
+    /* The year's own style first, then the default's: the stretch and the ramp
+     * are fixed per layer on purpose, so a year the collection has no style for
+     * is drawn with the same constants rather than dropped. */
+    const legend =
+      own?.byId.get(archive.id) ??
+      fallback?.byId.get(archive.id) ??
+      own?.byStem.get(archive.stem) ??
+      fallback?.byStem.get(archive.stem);
+    if (legend === undefined) {
+      console.warn("store: no style entry describes", archive.id);
+      continue;
+    }
+    const layer = { ...archive, ...legend, ...(windows.get(archive.year) ?? {}) };
+    if (!drawable(layer)) {
+      console.warn("store: skipping a layer the style describes incompletely", archive.id);
+      continue;
+    }
+    layers.push(layer);
+  }
+  if (!layers.length) throw new Error("the catalog publishes no drawable layers");
+  return layers;
+}
+
+/**
+ * Read the published store: its archives, how each is drawn, and when each year
+ * was acquired.
+ *
+ * @returns {Promise<object[]>}  one record per archive
+ */
+export async function readStore() {
+  /* Absolute from here down, so that every href in the catalog resolves against
+   * the document that carried it rather than against the page. */
+  const collectionUrl = new URL(MOSAIC_COLLECTION_URL, location.href).href;
+  let collection;
+  try {
+    collection = await readJson(collectionUrl);
+  } catch (error) {
+    /* The first local LIA archive is a standalone PMTiles file, not a published
+     * STAC collection yet. Keep this fallback small and explicit so the old
+     * catalog path remains available while the publication manifest is built. */
+    const localUrl = new URL(LOCAL_LAYER_MANIFEST_URL, location.href).href;
+    const manifest = await readJson(localUrl);
+    if (!Array.isArray(manifest?.layers)) throw error;
+    return manifest.layers;
+  }
+
+  /* The styles and every year's item are independent of each other, so they go
+   * out together rather than one after the next. A year whose item does not
+   * answer costs that year its date line and nothing else, which is why those
+   * are settled rather than awaited; a style that does not answer is fatal, the
+   * way it always was.
+   *
+   * Distinct hrefs, not distinct keys: the latest year is registered twice, once
+   * by its year and once as the default, and one document is one request. */
+  const hrefs = styleHrefs(collection);
+  const unique = [...new Set(hrefs.values())];
+  const requests = unique.map((href) => readJson(resolve(href, collectionUrl)));
+
+  const items = (collection?.links ?? [])
+    .filter((link) => link?.rel === "item" && isNonEmptyString(link.href))
+    .map((link) => readJson(resolve(link.href, collectionUrl)).catch(() => null));
+  const answered = await Promise.all([...requests, ...items]);
+  const documents = new Map(unique.map((href, index) => [href, answered[index]]));
+  const drawnAs = new Map([...hrefs].map(([key, href]) => [key, documents.get(href)]));
+  const settled = answered.slice(unique.length);
+
+  const windows = new Map();
+  for (const item of settled) {
+    // The item names its own year, the way the archives do: `ch-mosaic-2024`.
+    const year = /(\d{4})$/.exec(item?.id ?? "");
+    const dates = acquisitionWindow(item);
+    if (year && dates.startDate) windows.set(Number(year[1]), dates);
+  }
+
+  return storeLayers(collection, collectionUrl, drawnAs, windows);
+}

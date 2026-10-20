@@ -1,0 +1,17 @@
+{
+  "name": "lia-glacier-viewer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Interactive web map viewer for reconstructed Little Ice Age glacier geometry across the Alps.",
+  "author": {
+    "name": "Alps-wide Little Ice Age Glacier Viewer"
+  },
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}
