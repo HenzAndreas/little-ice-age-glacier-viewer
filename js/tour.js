@@ -16,6 +16,11 @@ const SEEN_KEY = "lia-viewer-tour-seen";
 const GAP_PX = 12;
 const MARGIN_PX = 10;
 const SPOT_PAD_PX = 6;
+const HINT_MS = 6000;
+
+/* A phone or tablet: no mouse to describe, so the navigation step only names
+ * the finger gestures. */
+const touchOnly = () => window.matchMedia("(hover: none) and (pointer: coarse)").matches;
 
 /* A 3D look up the Great Aletsch Glacier from its tongue, for the "Show me"
  * button on the 3D step. */
@@ -39,8 +44,7 @@ const STEPS = [
     target: ".maplibregl-ctrl-3d",
     title: "View the glaciers in 3D",
     text:
-      "Press 3D to tilt the map. In the Little Ice Age state the terrain itself carries the " +
-      "reconstructed ice surface, so the glaciers fill their valleys as they did back then.",
+      "Press 3D to tilt the map. See how the Little Ice Age glaciers filled the valleys.",
     action: {
       label: "Show me Aletsch in 3D",
       run: async () => {
@@ -52,34 +56,36 @@ const STEPS = [
   {
     target: ".maplibregl-ctrl-top-right .maplibregl-ctrl-group",
     title: "Moving around",
-    text:
-      "Zoom with the buttons or the scroll wheel. To rotate and tilt, drag with the right " +
-      "mouse button or hold Ctrl while dragging; on a touch screen, use two fingers. " +
-      "The compass resets the view to north.",
+    text: () =>
+      touchOnly()
+        ? "Pinch with two fingers to zoom. To tilt, drag two fingers up or down; to rotate, " +
+          "twist them. The compass resets the view to north."
+        : "Zoom with the buttons or the scroll wheel. To rotate and tilt, drag with the right " +
+          "mouse button or hold Ctrl while dragging. The compass resets the view to north.",
   },
   {
     target: "#raster-controls",
     title: "Ice thickness",
     text:
-      "The colours show the reconstructed ice thickness; the scale bar gives the values. " +
+      "The colours show the reconstructed ice thickness. " +
       "Use the opacity slider to see the terrain and imagery underneath.",
   },
   {
     target: "#lia-outlines-row",
     title: "Glacier outlines and details",
     text:
-      "Click inside any glacier to see its ID, equilibrium-line altitude (ELA), area, volume " +
-      "and length. This box turns the outlines on and off.",
+      "This box turns the outlines on and off. Click inside any glacier to see its ID, equilibrium-line altitude (ELA), area, volume " +
+      "and length.",
   },
   {
     target: "#extras-section",
     title: "Map options",
-    text: "Choose satellite imagery or a plain shaded relief, adjust the hillshade and toggle place names.",
+    text: "Choose satellite imagery or a shaded relief, adjust the hillshade and toggle place names.",
   },
   {
     target: "#tour-open",
     title: "That's it",
-    text: "You can replay this tour at any time with this button.",
+    text: "You can replay this tour at any time with this question mark button.",
   },
 ];
 
@@ -110,6 +116,7 @@ function storageSet() {
 
 export function startTour() {
   closeTour();
+  hideHint();
   openPanel();
   steps = STEPS.filter((step) => !step.target || visible(document.querySelector(step.target)));
   index = 0;
@@ -119,6 +126,13 @@ export function startTour() {
     h("div", { class: "tour-spot", "aria-hidden": "true" }),
     h("div", { class: "tour-card", tabIndex: -1 }),
   );
+  /* A click anywhere outside the card leaves the tour, like "Skip tour". Only
+   * clicks on the overlay itself count: the spotlight lets clicks through, and
+   * a card button has often been replaced by the next step before its click
+   * bubbles up here, so asking whether the target is inside the card fails. */
+  root.addEventListener("click", (event) => {
+    if (event.target === root) skipTour();
+  });
   document.body.append(root);
   document.addEventListener("keydown", onKey);
   window.addEventListener("resize", place);
@@ -134,6 +148,43 @@ export function closeTour() {
   storageSet();
 }
 
+/* Leaving before the end: close, then point at the "?" for a few seconds so
+ * the reader knows where the tour went. The hint goes at the next tap or
+ * click anywhere, or by itself. */
+function skipTour() {
+  closeTour();
+  showHint();
+}
+
+let hint = null;
+
+function hideHint() {
+  if (!hint) return;
+  clearTimeout(hint.timer);
+  document.removeEventListener("pointerdown", hideHint, true);
+  hint.node.remove();
+  hint = null;
+}
+
+function showHint() {
+  hideHint();
+  const button = document.getElementById("tour-open");
+  if (!visible(button)) return;
+  const node = h("div", { id: "tour-hint", role: "status" }, "Open the tour again here, if you need it.");
+  document.body.append(node);
+  const r = button.getBoundingClientRect();
+  const left = Math.min(
+    Math.max(MARGIN_PX, r.left + r.width / 2 - node.offsetWidth / 2),
+    window.innerWidth - node.offsetWidth - MARGIN_PX,
+  );
+  node.style.left = `${left}px`;
+  node.style.top = `${r.bottom + 10}px`;
+  // The arrow points at the button wherever the box had to be clamped to.
+  node.style.setProperty("--arrow-x", `${r.left + r.width / 2 - left}px`);
+  hint = { node, timer: setTimeout(hideHint, HINT_MS) };
+  document.addEventListener("pointerdown", hideHint, true);
+}
+
 function go(delta) {
   const next = index + delta;
   if (next < 0) return;
@@ -145,7 +196,7 @@ function go(delta) {
 }
 
 function onKey(event) {
-  if (event.key === "Escape") closeTour();
+  if (event.key === "Escape") skipTour();
   else if (event.key === "ArrowRight") go(1);
   else if (event.key === "ArrowLeft") go(-1);
 }
@@ -159,7 +210,7 @@ function showStep() {
   card.replaceChildren(...h("div", {},
     h("p", { class: "tour-count" }, `${index + 1} / ${steps.length}`),
     h("h2", { id: "tour-title" }, step.title),
-    h("p", { class: "tour-text" }, step.text),
+    h("p", { class: "tour-text" }, typeof step.text === "function" ? step.text() : step.text),
     step.action
       ? h(
           "button",
@@ -177,7 +228,7 @@ function showStep() {
     h(
       "div",
       { class: "tour-nav" },
-      last ? null : h("button", { type: "button", class: "tour-skip", onclick: closeTour }, "Skip tour"),
+      last ? null : h("button", { type: "button", class: "tour-skip", onclick: skipTour }, "Skip tour"),
       index > 0 ? h("button", { type: "button", onclick: () => go(-1) }, "Back") : null,
       h("button", { type: "button", class: "tour-next", onclick: () => go(1) }, last ? "Done" : "Next"),
     ),

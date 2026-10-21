@@ -29,7 +29,7 @@ The LIA glacier outlines are from Reinthaler and Paul (2025),
 
 ## Credits
 
-The viewer is adapted from Luis Q. Gentner's GLACE viewer. The code was
+The viewer is adapted from Luis Q. Gentner's [GLACE viewer](https://lqgentner.github.io/glace-viewer). The code was
 adapted with the help of Claude (Anthropic). It is built with
 [MapLibre GL JS](https://maplibre.org/) and [PMTiles](https://protomaps.com/docs/pmtiles).
 

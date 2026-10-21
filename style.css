@@ -811,6 +811,33 @@ input[type="range"] { width: 100%; margin: 0; accent-color: #fff; }
 #tour-open:hover { color: var(--accent); }
 
 #tour { position: fixed; inset: 0; z-index: 30; }
+
+/* After the tour is left early: a small box under the "?" saying where it went. */
+#tour-hint {
+  position: fixed;
+  z-index: 30;
+  max-width: 220px;
+  padding: 7px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--accent-ink);
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  animation: tour-hint-in 0.2s ease;
+}
+#tour-hint::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: calc(var(--arrow-x, 50%) - 5px);
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  transform: rotate(45deg);
+}
+@keyframes tour-hint-in { from { opacity: 0; transform: translateY(-4px); } }
 /* The cut-out: transparent itself, its shadow is the dimmed page. Light enough
    that the map stays readable while the "Show me" flight plays out behind. */
 .tour-spot {
@@ -864,4 +891,5 @@ input[type="range"] { width: 100%; margin: 0; accent-color: #fff; }
 
 @media (prefers-reduced-motion: reduce) {
   .tour-spot, .tour-card, .period-knob, .period-name, .period-track { transition: none; }
+  #tour-hint { animation: none; }
 }

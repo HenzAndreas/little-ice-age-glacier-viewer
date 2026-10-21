@@ -317,5 +317,71 @@ test("the viewer", async (t) => {
     // the only step: its button is "Done" rather than "Next".
     tour.querySelector(".tour-next").click();
     assert.equal(page.window.document.getElementById("tour"), null);
+    assert.equal(page.window.document.getElementById("tour-hint"), null, "no hint after Done");
+  });
+
+  await t.test("a click outside the card leaves the tour and points at the ?", async () => {
+    const { document } = page.window;
+    // jsdom lays nothing out; give every element a box so all steps and the
+    // "?" count as visible.
+    const original = page.window.Element.prototype.getClientRects;
+    page.window.Element.prototype.getClientRects = () => [{}];
+    try {
+      el("tour-open").click();
+      document.querySelector(".tour-card").click();
+      assert.ok(document.getElementById("tour"), "a click on the card keeps it open");
+
+      document.getElementById("tour").click();
+      assert.equal(document.getElementById("tour"), null, "a click beside it closes it");
+      const hint = document.getElementById("tour-hint");
+      assert.match(hint.textContent, /Open the tour again here/);
+
+      document.dispatchEvent(new page.window.Event("pointerdown"));
+      assert.equal(document.getElementById("tour-hint"), null, "the next tap removes the hint");
+    } finally {
+      page.window.Element.prototype.getClientRects = original;
+    }
+  });
+
+  await t.test("the navigation step names mouse or fingers, not both", async () => {
+    const { document } = page.window;
+    const original = page.window.Element.prototype.getClientRects;
+    page.window.Element.prototype.getClientRects = () => [{}];
+    // Nor can it scroll: the tour brings each target into view first.
+    page.window.Element.prototype.scrollIntoView ??= () => {};
+    // The step points at MapLibre's zoom buttons, which the fake map never builds.
+    const corner = document.createElement("div");
+    corner.className = "maplibregl-ctrl-top-right";
+    corner.innerHTML = '<div class="maplibregl-ctrl-group"></div>';
+    document.body.append(corner);
+    const navigationText = () => {
+      el("tour-open").click();
+      while (!/Moving around/.test(document.querySelector(".tour-card").textContent)) {
+        document.querySelector(".tour-next").click();
+      }
+      const text = document.querySelector(".tour-text").textContent;
+      document.querySelector(".tour-skip").click();
+      return text;
+    };
+    try {
+      // The fake matchMedia answers every query alike: "narrow" stands in for
+      // a touch-only device here.
+      page.setNarrow(true);
+      const touch = navigationText();
+      page.setNarrow(false);
+      const desktop = navigationText();
+      assert.match(touch, /two fingers/);
+      assert.doesNotMatch(touch, /mouse|scroll wheel/);
+      assert.match(desktop, /scroll wheel/);
+      assert.doesNotMatch(desktop, /fingers/);
+    } finally {
+      corner.remove();
+      page.window.Element.prototype.getClientRects = original;
+    }
+  });
+
+  await t.test("the credits link to the GLACE viewer", async () => {
+    const link = [...el("credits").querySelectorAll("a")].find((a) => a.textContent === "GLACE viewer");
+    assert.equal(link.href, "https://lqgentner.github.io/glace-viewer");
   });
 });
