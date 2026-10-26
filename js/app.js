@@ -11,6 +11,7 @@
  * for the map.
  */
 
+import { initAnalytics } from "./analytics.js";
 import { TERRAIN_CREDIT } from "./config.js";
 import {
   map,
@@ -123,6 +124,7 @@ function initControls() {
 }
 
 async function boot() {
+  initAnalytics();
   initControls();
   el("period").addEventListener("click", () => {
     selectPeriod(el("period").dataset.value === "lia" ? "today" : "lia");

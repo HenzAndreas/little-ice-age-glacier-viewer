@@ -8,6 +8,7 @@
 
 import { INVENTORY_BASE, INVENTORY_INDEX_URL, LIA_OUTLINES_URL } from "./config.js";
 import { addStacked, map, styleReady } from "./map.js";
+import { countEvent } from "./analytics.js";
 import { clearStatus, collapsible, creditButton, el, h, isNonEmptyString, setStatus } from "./ui.js";
 
 /* ---------- the shared lazy-source lifecycle ---------- */
@@ -354,4 +355,5 @@ map.on("click", (event) => {
     content.append(...section);
   });
   new maplibregl.Popup().setLngLat(event.lngLat).setDOMContent(content).addTo(map);
+  countEvent(seen.has(LIA_OUTLINE_FILL) ? "popup/lia-outline" : "popup/inventory");
 });

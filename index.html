@@ -203,6 +203,11 @@
                 This is a public, non-commercial research site. The basemap, imagery and terrain are used
                 under their providers' terms and attribution requirements.
               </p>
+              <p>
+                Visits and clicks on the controls are counted anonymously with
+                <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>,
+                without cookies or personal data.
+              </p>
             </div>
           </section>
         </div>
@@ -258,5 +263,9 @@
     <!-- Optional per-deployment overrides; must run before the modules do. -->
     <script src="site-config.js"></script>
     <script type="module" src="js/app.js"></script>
+    <!-- Anonymous, cookie-free visit counts (see js/analytics.js for the click
+         events). Ignored on localhost; the page works the same when blocked. -->
+    <script data-goatcounter="https://henzandreas.goatcounter.com/count"
+            async src="https://gc.zgo.at/count.js"></script>
   </body>
 </html>
