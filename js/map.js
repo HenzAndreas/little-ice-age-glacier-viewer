@@ -22,6 +22,8 @@ import {
   TERRAIN_TILEJSON,
   WORLD_IMAGERY_URL,
 } from "./config.js";
+import { noteThreeD } from "./analytics.js";
+import { initImageryDate } from "./imagery-date.js";
 import { browserLiaDemProtocol, LIA_DEM_TILES } from "./lia-dem.js";
 import { installSky } from "./sky.js";
 import { setStatus } from "./ui.js";
@@ -196,6 +198,10 @@ function foldAttribution() {
 foldAttribution();
 map.once("load", foldAttribution);
 
+/* The capture date of the imagery under the map centre, as one more entry in
+ * the same credits — see js/imagery-date.js. */
+const refreshImageryDate = initImageryDate(map, { isActive: () => basemapChoice === "imagery" });
+
 map.on("error", (event) => {
   if (event.error) console.warn("maplibre:", event.error.message);
 });
@@ -337,6 +343,7 @@ export async function setBasemap(value) {
   for (const id of [RELIEF_BACKGROUND_LAYER, RELIEF_LAYER]) {
     if (map.getLayer(id)) map.setLayoutProperty(id, "visibility", relief ? "visible" : "none");
   }
+  refreshImageryDate();
   /* The labels are not repainted for imagery: white on black or black on
    * white reads over snow and forest alike. */
 }
@@ -486,10 +493,12 @@ let threeDButton = null;
 /* `tilt: false` switches the mesh without moving the camera, which is what the
  * restore at the bottom of this file needs: the pitch is already where the
  * #hash put it, and easing to 60° would round every shared link off to the
- * same view. Pressing the button always tilts. */
-export async function setThreeD(on, { tilt = true } = {}) {
+ * same view. Pressing the button always tilts. `via` names what switched it,
+ * for the usage counts. */
+export async function setThreeD(on, { tilt = true, via = "button" } = {}) {
   view.threeD = on;
   syncThreeDButton();
+  noteThreeD(on, via);
   await styleReady;
   if (on) {
     const sourceId = ensureTerrainSource();
@@ -544,4 +553,4 @@ map.addControl(new ThreeDControl(), "top-right");
 /* The view lives in the #hash, pitch included, so a link copied while tilted
  * comes back tilted. Terrain is not in the hash, so without this the recipient
  * would get the slant with a flat surface under it. */
-if (map.getPitch() > 0) setThreeD(true, { tilt: false });
+if (map.getPitch() > 0) setThreeD(true, { tilt: false, via: "url" });

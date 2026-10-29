@@ -14,7 +14,7 @@ const load = async () => {
   window.goatcounter = { count: (event) => sent.push(event.path) };
   const analytics = await freshImport("js/analytics.js");
   analytics.initAnalytics();
-  return { page, sent };
+  return { page, sent, analytics };
 };
 
 test("analytics: controls report the state they were put in", async () => {
@@ -54,4 +54,47 @@ test("analytics: without the GoatCounter script nothing is sent and nothing thro
   analytics.initAnalytics();
   analytics.countEvent("anything");
   document.getElementById("period").click();
+});
+
+test("analytics: 3D is reported whatever switched it, and the mode the reader left in", async () => {
+  const { sent, analytics } = await load();
+
+  analytics.noteThreeD(true, "tour");
+  analytics.noteThreeD(true, "button"); // no change, no event
+  analytics.noteThreeD(false, "button");
+  analytics.noteThreeD(true, "url");
+
+  Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+  document.dispatchEvent(new window.Event("visibilitychange"));
+  // Only once per page load, however often the tab is hidden.
+  document.dispatchEvent(new window.Event("visibilitychange"));
+  window.dispatchEvent(new window.Event("pagehide"));
+
+  assert.deepEqual(sent, ["3d/on/tour", "3d/off/button", "3d/on/url", "leave/3d", "3d/time/under-1min"]);
+});
+
+test("analytics: a reader who never used 3D leaves in 2D, with no 3D time", async () => {
+  const { sent } = await load();
+  window.dispatchEvent(new window.Event("pagehide"));
+  assert.deepEqual(sent, ["leave/2d"]);
+});
+
+test("analytics: events before GoatCounter has loaded are sent once it is there", async () => {
+  installBrowser();
+  delete window.goatcounter;
+  const analytics = await freshImport("js/analytics.js");
+  analytics.noteThreeD(true, "url");
+  const sent = [];
+  window.goatcounter = { count: (event) => sent.push(event.path) };
+  analytics.countEvent("tour/open");
+  assert.deepEqual(sent, ["3d/on/url", "tour/open"]);
+});
+
+test("analytics: 3D time bins", async () => {
+  installBrowser();
+  const { threeDTimeBin } = await freshImport("js/analytics.js");
+  assert.deepEqual(
+    [30e3, 2 * 60e3, 10 * 60e3, 60 * 60e3].map(threeDTimeBin),
+    ["under-1min", "1-5min", "5-15min", "over-15min"],
+  );
 });

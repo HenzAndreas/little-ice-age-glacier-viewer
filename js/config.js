@@ -38,6 +38,9 @@ const DEFAULTS = {
    * TileJSON document because MapLibre can read ArcGIS' XYZ endpoint directly. */
   worldImageryUrl:
     "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  /* Esri's imagery metadata: which source World Imagery draws at a point and
+   * zoom, and when it was taken. One service per release; the newest is used. */
+  worldImageryMetadata: "https://metadata.maptiles.arcgis.com/arcgis/rest/services",
 
   /* Mapterhorn global terrain, terrarium-encoded, 512 px WEBP tiles. */
   terrainTilejson: "https://tiles.mapterhorn.com/tilejson.json",
@@ -99,6 +102,7 @@ export const BASEMAP_URL = settings.basemapUrl;
 export const BASEMAP_FLAVOR = settings.basemapFlavor;
 export const BASEMAP_ASSETS = settings.basemapAssets;
 export const WORLD_IMAGERY_URL = settings.worldImageryUrl;
+export const WORLD_IMAGERY_METADATA = String(settings.worldImageryMetadata).replace(/\/$/, "");
 
 export const TERRAIN_TILEJSON = settings.terrainTilejson;
 // #!!!! ADD HERE NEW TERRAIN/DEM SOURCES !!!!

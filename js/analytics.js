@@ -12,12 +12,71 @@
  * localhost, so local development is never counted.
  */
 
+/* Events from before GoatCounter's script has loaded — a link that opens in 3D
+ * reports it at startup. Kept short: a blocked script never loads. */
+const pending = [];
+const MAX_PENDING = 20;
+
 /* Send one event. `name` becomes the event's path in the dashboard. */
 export function countEvent(name) {
   try {
-    window.goatcounter?.count?.({ path: name, title: name, event: true });
+    if (typeof window.goatcounter?.count !== "function") {
+      if (pending.length < MAX_PENDING) pending.push(name);
+      return;
+    }
+    for (const queued of pending.splice(0)) send(queued);
+    send(name);
   } catch {
     // Statistics must never break the page.
+  }
+}
+
+function send(name) {
+  window.goatcounter.count({ path: name, title: name, event: true });
+}
+
+function flushPending() {
+  if (pending.length && typeof window.goatcounter?.count === "function") {
+    countEvent(pending.pop());
+  }
+}
+
+/* ---------- 3D ---------- */
+
+/* Reported from setThreeD() in js/map.js, whatever switched the mesh: the 3D
+ * button, the tour's Aletsch flight, or a URL that opens tilted (a shared link
+ * or a reload). Counting clicks on the button alone missed the last two. */
+const threeD = { on: false, since: 0, totalMs: 0, used: false };
+
+export function noteThreeD(on, via) {
+  if (on === threeD.on) return;
+  const now = performance.now();
+  if (threeD.on) threeD.totalMs += now - threeD.since;
+  Object.assign(threeD, { on, since: now, used: threeD.used || on });
+  countEvent(`3d/${on ? "on" : "off"}/${via}`);
+}
+
+/* Minutes in 3D, in a few coarse bins rather than a number per visit. */
+export function threeDTimeBin(ms) {
+  const minutes = ms / 60000;
+  if (minutes < 1) return "under-1min";
+  if (minutes < 5) return "1-5min";
+  if (minutes < 15) return "5-15min";
+  return "over-15min";
+}
+
+/* Once per page load, when the page is first hidden: the tab closed or left, or
+ * the phone locked. Says whether the reader left in 3D and, if they used it, how
+ * long they spent there. GoatCounter sends with `sendBeacon`, which survives
+ * the page being closed. */
+let leaveReported = false;
+function reportLeave() {
+  if (leaveReported) return;
+  leaveReported = true;
+  countEvent(`leave/${threeD.on ? "3d" : "2d"}`);
+  if (threeD.used) {
+    const ms = threeD.totalMs + (threeD.on ? performance.now() - threeD.since : 0);
+    countEvent(`3d/time/${threeDTimeBin(ms)}`);
   }
 }
 
@@ -46,7 +105,6 @@ function clickName(target) {
   if (button) {
     if (Object.hasOwn(BUTTONS, button.id)) return BUTTONS[button.id](button);
     if (button.closest("#basemap-style")) return `basemap/${button.dataset.value}`;
-    if (button.classList.contains("maplibregl-ctrl-3d")) return "map/3d-toggle";
     if (button.classList.contains("tour-skip")) return "tour/skip";
     if (button.classList.contains("tour-next") && button.textContent === "Done") return "tour/done";
     return null;
@@ -68,4 +126,9 @@ export function initAnalytics() {
     const input = event.target;
     if (input && Object.hasOwn(INPUTS, input.id ?? "")) countEvent(INPUTS[input.id](input));
   });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") reportLeave();
+  });
+  window.addEventListener("pagehide", reportLeave);
+  document.querySelector("script[data-goatcounter]")?.addEventListener("load", flushPending);
 }

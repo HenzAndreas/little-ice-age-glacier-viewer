@@ -538,6 +538,8 @@ input[type="range"] { width: 100%; margin: 0; accent-color: #fff; }
 .maplibregl-popup-close-button:hover { color: var(--text); background: transparent; }
 .maplibregl-popup-tip { border-top-color: var(--panel); border-bottom-color: var(--panel); }
 .maplibregl-ctrl-attrib { font-size: 10px; }
+/* The imagery capture date (js/imagery-date.js), below the credits line. */
+.maplibregl-ctrl-attrib .imagery-date { display: block; }
 
 @media (max-width: 640px) {
   #panel-shell {

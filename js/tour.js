@@ -48,7 +48,7 @@ const STEPS = [
     action: {
       label: "Show me Aletsch in 3D",
       run: async () => {
-        await setThreeD(true, { tilt: false });
+        await setThreeD(true, { tilt: false, via: "tour" });
         map.flyTo({ ...SHOWCASE_VIEW, duration: 3500, essential: true });
       },
     },
