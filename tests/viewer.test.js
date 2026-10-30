@@ -180,6 +180,8 @@ test("the viewer", async (t) => {
       "OpenStreetMap",
       "Mapterhorn",
       "non-commercial",
+      "RECONCILE (200020_213077/1)",
+      "Andreas Henz",
     ]) {
       assert.ok(text.includes(phrase), `credits mention ${phrase}`);
     }
@@ -265,6 +267,29 @@ test("the viewer", async (t) => {
     assert.ok(text.includes("Some outline source"));
     assert.ok(text.includes("doi:10.5194/tc-19-5913-2025"), "the final paper, not the preprint");
     assert.ok(text.includes("doi:10.5194/tc-19-753-2025"), "the outline inventory");
+    assert.ok(!text.includes("Glaciers today"), "no names row without names");
+  });
+
+  await t.test("the popup lists today's glaciers, the largest few first", async () => {
+    map.hits = [
+      {
+        layer: { id: "lia-outline-fill" },
+        properties: {
+          LIA_ID: 3860,
+          names: "Grosser Aletschgletscher; Mittelaletschgletscher; A; B; C; D",
+          names_count: 6,
+          names_from: "Swiss Glacier Inventory 2016 (GLAMOS)",
+        },
+      },
+    ];
+    map.fire("click", { point: { x: 10, y: 10 }, lngLat: [8, 46] });
+    const text = page.popups.at(-1).content.textContent;
+    assert.ok(text.includes("Glaciers today: Grosser Aletschgletscher, Mittelaletschgletscher, A, B and 2 more"));
+    assert.ok(text.includes("Names from: Swiss Glacier Inventory 2016 (GLAMOS)"));
+
+    map.hits[0].properties = { LIA_ID: 1, names: "Vanished Kees", names_count: 1, names_from: "GLIMS (LIA inventory)" };
+    map.fire("click", { point: { x: 10, y: 10 }, lngLat: [8, 46] });
+    assert.ok(page.popups.at(-1).content.textContent.includes("Name in LIA inventory: Vanished Kees"));
   });
 
   await t.test("markup in a feature property stays text", async () => {

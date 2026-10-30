@@ -16,6 +16,14 @@ Kept attributes (units as in the source table):
 - ``Citation``: source of the LIA outline
 
 The climate and topography fields stay in the source table and the CSV.
+
+With ``--names`` (default ``derived-data/lia_glacier_names.csv`` when it
+exists, from ``build_lia_glacier_names.py``), three more:
+
+- ``names``: today's glaciers inside the outline, largest first, joined by "; "
+  (for ``glims-lia``, the outline's own name in the LIA inventory)
+- ``names_count``: how many names ``names`` holds
+- ``names_from``: where the names come from, as shown in the popup
 """
 
 from __future__ import annotations
@@ -39,6 +47,14 @@ FIELDS = {
     "Citation": None,
 }
 ATTRIBUTION = "LIA outlines: <a href=\"https://doi.org/10.5194/tc-19-753-2025\">Reinthaler and Paul (2025)</a>"
+NAMES_CSV = Path("derived-data/lia_glacier_names.csv")
+# names_source in the names table -> what the popup says.
+NAMES_FROM = {
+    "sgi": "Swiss Glacier Inventory 2016 (GLAMOS)",
+    "osm": "OpenStreetMap",
+    "glims": "GLIMS (national glacier inventories)",
+    "glims-lia": "GLIMS (LIA inventory)",
+}
 
 
 def popup_table(frame):
@@ -56,6 +72,19 @@ def popup_table(frame):
     return table
 
 
+def add_names(table, names_path: Path):
+    """Join the names table on ``LIA_ID``; outlines without a name get none."""
+    import pandas as pd
+
+    names = pd.read_csv(names_path)
+    unknown = set(names["names_source"]) - set(NAMES_FROM)
+    if unknown:
+        raise ValueError(f"{names_path}: unknown names_source {', '.join(sorted(unknown))}")
+    names["names_from"] = names["names_source"].map(NAMES_FROM)
+    names["names_count"] = names["names_count"].astype("Int64")
+    return table.merge(names[["LIA_ID", "names", "names_count", "names_from"]], on="LIA_ID", how="left")
+
+
 def find_tippecanoe() -> str:
     found = shutil.which("tippecanoe") or str(Path(sys.executable).parent / "tippecanoe")
     if not Path(found).is_file():
@@ -63,7 +92,7 @@ def find_tippecanoe() -> str:
     return found
 
 
-def build(input_path: Path, output_path: Path) -> None:
+def build(input_path: Path, output_path: Path, names_path: Path | None = None) -> None:
     import geopandas as gpd
 
     frame = gpd.read_file(input_path)
@@ -71,6 +100,8 @@ def build(input_path: Path, output_path: Path) -> None:
         raise ValueError(f"{input_path}: no CRS")
     frame = frame[frame.geometry.notna() & ~frame.geometry.is_empty]
     table = popup_table(frame).to_crs("EPSG:4326")
+    if names_path is not None:
+        table = add_names(table, names_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="lia-outlines-") as temp:
         geojson = Path(temp) / "outlines.geojson"
@@ -92,7 +123,8 @@ def build(input_path: Path, output_path: Path) -> None:
             ],
             check=True,
         )
-    print(f"wrote {output_path}: {len(table)} outlines, {output_path.stat().st_size / 1e6:.1f} MB")
+    named = f", {table['names'].notna().sum()} named" if "names" in table else ""
+    print(f"wrote {output_path}: {len(table)} outlines{named}, {output_path.stat().st_size / 1e6:.1f} MB")
 
 
 if __name__ == "__main__":
@@ -102,5 +134,8 @@ if __name__ == "__main__":
         default=Path("original-data/Alps-wide_glacier_geometry_reconstruction_henz_et_al_2025_shapefile/evaluation-lia-updated-citations.shp"),
     )
     parser.add_argument("output", nargs="?", type=Path, default=Path("local-data/Alps-wide_LIA_outlines.pmtiles"))
+    parser.add_argument("--names", type=Path, help=f"names table (default {NAMES_CSV} if present)")
+    parser.add_argument("--no-names", action="store_true", help="build without the names")
     args = parser.parse_args()
-    build(args.input, args.output)
+    names = None if args.no_names else args.names or (NAMES_CSV if NAMES_CSV.exists() else None)
+    build(args.input, args.output, names)

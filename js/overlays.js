@@ -304,6 +304,16 @@ function inventoryRow(feature) {
   return popupSection(entry.title, [identity, ["Acquisition year", props.year]]);
 }
 
+/* The build script joins names with "; ", largest glacier first. A large LIA
+ * glacier can hold a dozen of today's, so only the first few are listed. */
+const NAMES_SHOWN = 4;
+function nameList(value) {
+  const names = String(value ?? "").split("; ").filter(Boolean);
+  if (!names.length) return null;
+  const rest = names.length - NAMES_SHOWN;
+  return rest > 0 ? `${names.slice(0, NAMES_SHOWN).join(", ")} and ${rest} more` : names.join(", ");
+}
+
 const withUnit = (value, unit) =>
   value === null || value === undefined || value === "" ? null : `${value} ${unit}`;
 
@@ -311,7 +321,12 @@ const withUnit = (value, unit) =>
  * labels and units are the page's. */
 export function liaOutlineRow(feature) {
   const props = feature.properties;
+  // "Glaciers today" from today's inventories; from the LIA inventory, it is
+  // the outline's own name. The provenance is the archive's, in `names_from`.
+  const fromLia = String(props.names_from ?? "").includes("LIA inventory");
   return popupSection("LIA glacier", [
+    [fromLia ? "Name in LIA inventory" : "Glaciers today", nameList(props.names)],
+    ["Names from", props.names ? props.names_from : null],
     ["LIA ID", props.LIA_ID],
     ["ELA", withUnit(props.ela, "m a.s.l.")],
     ["Area, modelled", withUnit(props.area, "km²")],
